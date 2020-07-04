@@ -1,4 +1,22 @@
-\documentclass{article}
+\documentclass[a4paper,10pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%Includes "References" in the table of contents
+\usepackage[nottoc]{tocbibind}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{setspace}
+\onehalfspacing
+% \usepackage{cite}
+% \usepackage[backend=bibtex]{biblatex}
+\usepackage{hyperref}
+\bibliographystyle{plain}
+
+\newenvironment{theorem}[1][]{\par\medskip
+   \noindent \textbf{Theorem~#1.} \rmfamily}{\medskip}
+\newenvironment{assumption}[1][]{\par\medskip
+   \noindent \textbf{Assumption~#1.} \rmfamily}{\medskip}
 
 \begin{document}
 
@@ -13,11 +31,11 @@ This is a work in progress document discussing the consistency of
 common convex surrogate functions for ranking as well as the
 convergence rate of the corresponding empirical risk. First we
 summarize the main points of Duchi et al. in this
-regard~\cite{duchi-2010-ranking,duchi-2013-ranking}. Then we discuss
-some relevant research directions, in partictular, we are interested
-in achieving fast convergence rates for ranking
-applications.
-\footnote{I also point out confusion and questions I have in the footnotes.}
+regard~\cite{duchi-2010-ranking,duchi-2013-ranking} focusing on the
+uniform convergence guarantees. Then we discuss some relevant research
+directions, in partictular, we are interested in achieving fast
+convergence rates for ranking applications.  \footnote{I also point
+  out confusion and questions I have in the footnotes.}
 
 \section{Literature Review}
 
@@ -35,7 +53,7 @@ problems and unify them under some conditions
 The next section discusses how aggregating the pairwise preferences
 into lists allows us to define consistent and tractable surrogate loss
 functions. The key idea is that the surrogates must be order preserving.
-\footnote{The authors describe inconsistency as arising due to a lack of complete preference information. This point is not entirely clear to me since the proof of inconsistency seems to depend on the variability in preference information rather than the lack of information. See \cite{ravikumar-2011-ranking} for a discussion on how a lack of normalization leads to ``non-robustness''.}
+\footnote{The authors describe inconsistency as arising due to a lack of complete preference information. This point is not entirely clear to me since the proof of inconsistency seems to depend on the variability in preference information rather than the lack of information. See Ravikumar et al. \cite{ravikumar-2011-ranking} for a discussion on how a lack of normalization leads to ``non-robustness''.}
 
 Given that our new surrogate loss functions consist of an aggregation
 step, it is natural to consider the aggregation in batches. In
@@ -54,14 +72,173 @@ underlying listwise losses.
 
 I still have not spent sufficient time on the experimental section to provide an overview.
 
+\subsection{Preliminaries}
+
+The ranking problem can be described generally as ordering a list of
+\(m\) items for each query \(q\) in the query space \(Q\) (which we
+assume is countable). The is equivalent to providing a real valued
+score for each item in the list.
+
+Duchi et al.~\cite{duchi-2013-ranking} consider a general setup where
+the item preference information is received in an arbitrary form and
+then transformed into a problem specific structure space by an
+aggregation function. Here we will focus on the case where the
+preference information $Y_i$ is a matrix of pairwise preferences and
+the aggregation function $s$ is either a simple average, or a
+transformation into a list of item scores. We also consider the case
+where $s$ performs no aggregation at all. Consider the 0-1 pairwise
+ranking loss:
+
+\begin{equation} \label{eq:general-loss}
+  L(\alpha, A) = \sum_{i<j} A_{ij}1(\alpha_i \leq \alpha_j) + \sum_{i>j} A_{ij}1(\alpha_i < \alpha_j)
+\end{equation}
+
+where $A = s(\{Y_i\}_{i=1}^k)$. Note that this is different from the typical 0-1 pairwise ranking loss in that the error \(\alpha_i = \alpha_j\) is penalized only once.
+\footnote{They mention that this is a technical detail, but it's not clear to me where in the proofs it is important. Most likely it has to do with the inconsistency results.}
+
+\begin{assumption}[A]
+  The distribution of preference information \(\mu_q^k\) converges weakly to some limiting distribution \(mu_q\) for every query \(q\) where \(k\) is the amount of preference aggregation. So, for \(S_k = s(\{Y_i\}_{i=1}^k) \sim \mu_q^k\) as \(k \rightarrow \infty\):
+
+  \begin{equation}
+    \mu_q^k \rightarrow^d \mu_q
+  \end{equation}
+
+\end{assumption}
+
+\begin{assumption}[B]
+  The loss function \(L\) is bounded in \([0,1]\) and continuous.
+\end{assumption}
+
+Given the loss function \(L\) we define the loss over a distribution of preference information \(\mu\) as:
+
+\begin{equation}
+  \ell(\alpha, \mu) = \int L(alpha, s) d\mu(s)
+\end{equation}
+
+For the case where the preference information \(Y_i\) is a matrix of pairwise preferences and the aggregation function is the average, then this reduces to: \(ell(alpha, \mu) = L(\alpha, Y_{i,j}^\mu)\) where \(Y_{i,j}^\mu\) is the average preference of item \(i\) over item \(j\) according to the distribution \(\mu\).
+
+We define the ranking risk of our scoring function \(f: Q \rightarrow R^m\) as:
+
+\begin{equation}
+  R(f) = \sum_q^Q p_q \ell(f(q), \mu_q)
+\end{equation}
+
+Where \(p_q\) is the prior probability of query \(q\). Without loss of generality, let \(p_q\) be decreasing with the query index \(q\).
+
+Similarly, we define the surrogate loss and surrogate risk as:
+
+\begin{align}
+  \ell_\varphi(\alpha, \mu) &= \int \varphi(\alpha, s) d\mu(s) \\
+  R_\varphi(f) &= \sum_qp_q\ell_\varphi(f(q), \mu_q)
+\end{align}
+
+\subsection{Inconsistency Results}
+
+
 \subsection{Proving a ULLN for the U-statistics Based Risk Functional}
 
-The proof for the uniform law of large numbers for the risk functional \(\hat{R}_{n, \varphi}\) can be decomposed into controlling three terms:
-...
+Define the U-statistics based empirical risk:
+
+\begin{equation}
+  \hat{R}_{n, \varphi}(f) = \frac{1}{n} \sum_q \hat{n}_q \frac{1}{\binom{\hat{n}_q}{k}} \sum_{I_q \in \mathcal{I}_q}\varphi(f(q), s(\{Y_i\}_{I_q}))
+\end{equation}
+
+where \(\hat{n}_q\) is the relative frequency of query \(q\) in a sample of size \(n\) and \(\mathcal{I}_q\) is the set of all combinations of indexes of samples corresponding to query \(q\).
+
+We include conditions I and II as well as assumptions D, E and F from Duchi et al. \cite{duchi-2013-ranking} in the statement of theorem 4.
+\begin{theorem}[4]
+  For \(\phi \in [0, B_n]\) bounded and \(L_n\)-lipshitz over \(\mathcal{F}_n\),
+  if there exists some \(\rho, \beta > 0\) such that:
+
+  \begin{equation}
+    p_q = O(q^{-\beta -1})
+  \end{equation}
+  and the expected surrogate loss at aggegation level \(k\) satisfies for all \(f, k, q, n\):
+
+  \begin{equation}
+    \left|\mathbb{E}_q\varphi(f(q), s(\{Y_i\}^k)) - \lim_{k' \rightarrow \infty}\mathbb{E}_q\varphi(f(q), s(\{Y_i\}^{k'}))\right| = O(B_nk^{-\rho})
+  \end{equation}
+
+  with \(B_n/k_n^\rho = o(1)\) and \(k_nB_n^{(1+\beta)/\beta}=o(n)\) and in addition we have the following constrain on the covering numbers:
+
+  \begin{equation}
+    k_nB_n\sqrt{\log\left( N(\frac{\epsilon}{4L_n}) \right)} = o(\sqrt n)
+  \end{equation}
+
+  then we have the uniform convergence guarantee:
+
+  \begin{equation}
+    \sup_{f \in \mathcal{F}_n}\left| \hat{R}_{n, \varphi}(f) - R_\varphi(f) \right| \rightarrow^p 0
+  \end{equation}
+
+
+\end{theorem}
+The proof for this uniform law of large numbers can be broken down by decomposing the uniform deviation into three terms and controlling each of them:
+
+\begin{equation} \label{eq:uni-dev}
+  \sup_{f \in \mathcal{F}_n} \left| \hat{R}_{n, \varphi}(f) - R_\varphi(f) \right| \leq
+  \sup_{f \in \mathcal{F}_n} \left| \hat{R}_{n, \varphi}(f) - R_{n, \varphi}(f) \right| +
+  \sup_{f \in \mathcal{F}_n} \left| R_{n, \varphi}(f) - R_{\varphi}(f) \right|
+\end{equation}
+
+where we denote :
+
+\begin{equation}
+  R_{\varphi, n} = \sum_q\sum_{l=0}^n l \mathbb{P}_n(\hat{n}_q = l) \mathbb{E}(\varphi(f(q), s(\{Y_i\}^{\min(l, k)}))|Q=q)
+\end{equation}
+
+The first term (I) on the RHS of inequality \ref{eq:uni-dev} is the deviation of the U-statistic based estimate \(\hat{R}_{n, \varphi}(f)\) from it's expectation \(R_{n, \varphi}(f)\). The second term (II) is the deviation of \(R_{n, \varphi}(f)\) from it's limit \(R_{\varphi}(f)\) as \(n, k \rightarrow \infty\). The second term is controlled by lemma 8 of the supplementary material \cite{duchi-2013-ranking} while the first term is controlled by lemma 10.
+
+Lemma 8 uses the conditions on the the boundedness of \(\phi\) and the aggregation level \(k_n\) as well as a covering number argument to give a deterministic bount on the second term above.
+
+Lemma 10 shows that the first term is \(o_p(1)\) by arguing that the risk functional \(\hat{R}_{n, \varphi}(f)\) satisfies a bounded differences inequality. Applying McDiarmid's inequality as well as a union bound involving the covering number gives the following bound, yielding the claim:
+
+\begin{equation}
+  \mathbb{P}\left( \sup_{f \in \mathcal{F}_n} \left| \hat{R}_{n, \varphi}(f) - R_{n, \varphi}(f) \right| \geq \epsilon \right) \leq 2\exp\left( \log N \left( \frac{\epsilon}{4L_n}, n \right) - \frac{n \epsilon^2}{32k^2B_n^2} \right)
+\end{equation}
+
+where \(N \left( \frac{\epsilon}{4L_n}, n \right)\) gives the covering number of \(\mathcal{F}_n\).
+\footnote{My understanding is that this gives a rate worse than \(O_p(1/\sqrt n)\) since the concentration inequality involves the covering number which is dependent on \(\epsilon\). Unless for the function class under consideration this can be bound uniformly independent of \(epsilon\), this is worse than the typical rate.}
 
 \subsubsection{Potential improvements}
-The U-statistics formulation is totally ignored in controlling term (I), leading to the typical rate.
-\footnote{actually, this rate is not even \(O_p(1/\sqrt n)\) since the concentration inequality contains an additional term involving \(\log(N)\) where \(N\) is the \(\epsilon\)-covering number of the space of functions. Can we get rid of this?}
+The U-statistics formulation is totally ignored in controlling term
+(I), leading to a rate slower than \(O_p(1/\sqrt n)\). For the case of
+bipartite ranking, Clemencon et
+al.~\cite{clemencon-2008-ranking-rates} derive fast rates on the
+convergence of the empirical risk minimizer to the optimal
+optimizer. The approach involves making a low noise assumption (bound
+variance of the risk in terms of the expectation) and applying a
+Hoeffding decomposition of the U-statistic based risk. The decomposed
+terms are controlled by applying the decoupling technique for
+degenerate U-statistics.
+
+However, their results are more relevant in a
+model selection context since they deal directly with the non-convex
+pairwise 0-1 ranking loss. Clemencon et
+al.~\cite{clemencon-2008-ranking-rates} also mention (in Remark 7)
+that it would be interesting to derive fast rates for convex
+surrogates, but that it would be quite technical. They point to
+Blanchard et al.~\cite{blanchard-2003-rates} for a similar derivation
+for the binary classification case.
+
+Bartlett et al.~\cite{bartlett-2006-risk} derive fast rates for convex
+surrogates in the context of binary classification. They also
+demonstrate via simulation that their derived rates are
+representative. Clemencon et al.~\cite{clemencon-2008-ranking-rates}
+show how the results from this work transfer over to the case of
+bipartite ranking but do not derive fast rates.
+
+\textbf{Questions}
+
+\begin{itemize}
+  \item What is the next step in deriving fast rates for the case of bipartite ranking?
+  \item Is the case of listwise ranking with aggregation (as framed by Duchi) simpler?
+  \item How can we unify the notions of aggregation from Duchi and normalization from Ravikumar?
+  \item Why hasnt there been further work on this topic in the past 10 years?
+  \item Is the model selection problem more interesting? In particular for the case of listwise ranking.
+\end{itemize}
+
+\bibliography{summary}{}
 
 \end{document}
 
