@@ -173,7 +173,7 @@ We include conditions I and II as well as assumptions D, E and F from Duchi et a
 
 
 \end{theorem}
-The proof for this uniform law of large numbers can be broken down by decomposing the uniform deviation into three terms and controlling each of them:
+The proof for this uniform law of large numbers can be broken down by decomposing the uniform deviation into two terms and controlling each of them:
 
 \begin{equation} \label{eq:uni-dev}
   \sup_{f \in \mathcal{F}_n} \left| \hat{R}_{n, \varphi}(f) - R_\varphi(f) \right| \leq
@@ -204,7 +204,7 @@ where \(N \left( \frac{\epsilon}{4L_n}, n \right)\) gives the covering number of
 The U-statistics formulation is totally ignored in controlling term
 (I), leading to a rate slower than \(O_p(1/\sqrt n)\). For the case of
 bipartite ranking, Clemencon et
-al.~\cite{clemencon-2008-ranking-rates} derive fast rates on the
+al.~\cite{clemencon-2008-ranking-rates} derive the typical \(O_p(q/sqrt n)\) rate of
 convergence of the empirical risk minimizer to the optimal
 optimizer. The approach involves making a low noise assumption (bound
 variance of the risk in terms of the expectation) and applying a
