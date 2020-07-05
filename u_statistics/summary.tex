@@ -140,10 +140,10 @@ Similarly, we define the surrogate loss and surrogate risk as:
 Define the U-statistics based empirical risk:
 
 \begin{equation}
-  \hat{R}_{n, \varphi}(f) = \frac{1}{n} \sum_q \hat{n}_q \frac{1}{\binom{\hat{n}_q}{k}} \sum_{I_q \in \mathcal{I}_q}\varphi(f(q), s(\{Y_i\}_{I_q}))
+  \hat{R}_{n, \varphi}(f) = \sum_q \frac{\hat{n}_q}{n} \frac{1}{\binom{\hat{n}_q}{k}} \sum_{I_q \in \mathcal{I}_q}\varphi(f(q), s(\{Y_i\}_{I_q}))
 \end{equation}
 
-where \(\hat{n}_q\) is the relative frequency of query \(q\) in a sample of size \(n\) and \(\mathcal{I}_q\) is the set of all combinations of indexes of samples corresponding to query \(q\).
+where \(\hat{n}_q\) is the frequency of query \(q\) in a sample of size \(n\) and \(\mathcal{I}_q\) is the set of all combinations of indexes of samples corresponding to query \(q\).
 
 We include conditions I and II as well as assumptions D, E and F from Duchi et al. \cite{duchi-2013-ranking} in the statement of theorem 4.
 \begin{theorem}[4]
