@@ -181,10 +181,10 @@ The proof for this uniform law of large numbers can be broken down by decomposin
   \sup_{f \in \mathcal{F}_n} \left| R_{n, \varphi}(f) - R_{\varphi}(f) \right|
 \end{equation}
 
-where we denote:\footnote{Is this missing a factor of \(1/n\)?}
+where we denote:\footnote{The factor of \(1/n\) is missing from the paper but is used in the supplementary material.}
 
 \begin{equation}
-  R_{\varphi, n} = \sum_q\sum_{l=0}^n l \mathbb{P}_n(\hat{n}_q = l) \mathbb{E}(\varphi(f(q), s(\{Y_i\}^{\min(l, k)}))|Q=q)
+  R_{\varphi, n} = \sum_q\sum_{l=0}^n l \mathbb{P}_n/n(\hat{n}_q = l) \mathbb{E}(\varphi(f(q), s(\{Y_i\}^{\min(l, k)}))|Q=q)
 \end{equation}
 
 The first term (I) on the RHS of inequality \ref{eq:uni-dev} is the deviation of the U-statistic based estimate \(\hat{R}_{n, \varphi}(f)\) from it's expectation \(R_{n, \varphi}(f)\). The second term (II) is the deviation of \(R_{n, \varphi}(f)\) from it's limit \(R_{\varphi}(f)\) as \(n, k \rightarrow \infty\). The second term is controlled by lemma 8 of the supplementary material \cite{duchi-2013-ranking} while the first term is controlled by lemma 10.
