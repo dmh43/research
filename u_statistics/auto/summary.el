@@ -18,6 +18,7 @@
     "hyperref")
    (LaTeX-add-labels
     "eq:general-loss"
+    "eq:er"
     "eq:uni-dev")
    (LaTeX-add-environments
     '("Assumption" LaTeX-env-args ["argument"] 0)

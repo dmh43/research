@@ -70,8 +70,6 @@ The authors then prove a ULLN for the risk
 functional they define and show that it is consistent for the
 underlying listwise losses.
 
-I still have not spent sufficient time on the experimental section to provide an overview.
-
 \subsection{Preliminaries}
 
 The ranking problem can be described generally as ordering a list of
@@ -82,12 +80,12 @@ score for each item in the list.
 Duchi et al.~\cite{duchi-2013-ranking} consider a general setup where
 the item preference information is received in an arbitrary form and
 then transformed into a problem specific structure space by an
-aggregation function. Here we will focus on the case where the
-preference information $Y_i$ is a matrix of pairwise preferences and
-the aggregation function $s$ is either a simple average, or a
-transformation into a list of item scores. We also consider the case
-where $s$ performs no aggregation at all. Consider the 0-1 pairwise
-ranking loss:
+aggregation function. For example, the preference information $Y_i$
+could be a matrix of pairwise preferences and the aggregation function
+$s$ is either a simple average, or a transformation into a list of
+item scores. $Y_i$ could also be the interactions a user had with a
+list of items (clickstream data). We also consider the case where $s$ performs no
+aggregation at all. Consider the 0-1 pairwise ranking loss:
 
 \begin{equation} \label{eq:general-loss}
   L(\alpha, A) = \sum_{i<j} A_{ij}1(\alpha_i \leq \alpha_j) + \sum_{i>j} A_{ij}1(\alpha_i < \alpha_j)
@@ -139,7 +137,7 @@ Similarly, we define the surrogate loss and surrogate risk as:
 
 Define the U-statistics based empirical risk:
 
-\begin{equation}
+\begin{equation} \label{eq:er}
   \hat{R}_{n, \varphi}(f) = \sum_q \frac{\hat{n}_q}{n} \frac{1}{\binom{\hat{n}_q}{k}} \sum_{I_q \in \mathcal{I}_q}\varphi(f(q), s(\{Y_i\}_{I_q}))
 \end{equation}
 
@@ -228,13 +226,21 @@ representative. Clemencon et al.~\cite{clemencon-2008-ranking-rates}
 show how the results from this work transfer over to the case of
 bipartite ranking but do not derive fast rates.
 
+The U-statistics based empirical risk defined in this work
+(\ref{eq:er}) resembles a bagging approach and might be analyzed in a
+similar way. The objective function of the bipartite ranking problem
+\cite{clemencon-2008-ranking-rates} (equivalently, AUC maximization)
+is naturally framed as an optimization of a U-statistic. The ranking
+problem discussed here is more general, bipartite ranking does not
+consider the impact of a query context nor does it consider graded
+relevance levels.
+
 \textbf{Questions}
 
 \begin{itemize}
+  \item Can we extend the results of Clemencon et al.~\cite{clemencon-2008-ranking-rates} to listwise ranking with aggregation (as framed by Duchi)? The next step would be to apply a Hoeffding decomposition to the empirical risk \ref{ref:er} for \(k=3\) and see if the terms can be controlled similarly.
   \item What is the next step in deriving fast rates for the case of bipartite ranking? Can Proposition 12 from Clemencon et al.~\cite{clemencon-2008-ranking-rates} be tightened?
-  \item Is the case of listwise ranking with aggregation (as framed by Duchi) simpler?
   \item How can we unify the notions of aggregation from Duchi and normalization from Ravikumar?
-  \item Why hasnt there been further work on this topic in the past 10 years?
   \item Is the model selection problem more interesting? In particular for the case of listwise ranking.
 \end{itemize}
 
