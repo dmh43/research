@@ -87,7 +87,7 @@ item scores. $Y_i$ could also be the interactions a user had with a
 list of items (clickstream data). We also consider the case where $s$ performs no
 aggregation at all. Consider the 0-1 pairwise ranking loss:
 
-\begin{equation} \label{eq:general-loss}
+\begin{equation}\label{eq:general-loss}
   L(\alpha, A) = \sum_{i<j} A_{ij}1(\alpha_i \leq \alpha_j) + \sum_{i>j} A_{ij}1(\alpha_i < \alpha_j)
 \end{equation}
 
@@ -137,7 +137,7 @@ Similarly, we define the surrogate loss and surrogate risk as:
 
 Define the U-statistics based empirical risk:
 
-\begin{equation} \label{eq:er}
+\begin{equation}\label{eq:er}
   \hat{R}_{n, \varphi}(f) = \sum_q \frac{\hat{n}_q}{n} \frac{1}{\binom{\hat{n}_q}{k}} \sum_{I_q \in \mathcal{I}_q}\varphi(f(q), s(\{Y_i\}_{I_q}))
 \end{equation}
 
@@ -173,7 +173,7 @@ We include conditions I and II as well as assumptions D, E and F from Duchi et a
 \end{theorem}
 The proof for this uniform law of large numbers can be broken down by decomposing the uniform deviation into two terms and controlling each of them:
 
-\begin{equation} \label{eq:uni-dev}
+\begin{equation}\label{eq:uni-dev}
   \sup_{f \in \mathcal{F}_n} \left| \hat{R}_{n, \varphi}(f) - R_\varphi(f) \right| \leq
   \sup_{f \in \mathcal{F}_n} \left| \hat{R}_{n, \varphi}(f) - R_{n, \varphi}(f) \right| +
   \sup_{f \in \mathcal{F}_n} \left| R_{n, \varphi}(f) - R_{\varphi}(f) \right|
@@ -238,10 +238,12 @@ relevance levels.
 \textbf{Questions}
 
 \begin{itemize}
-  \item Can we extend the results of Clemencon et al.~\cite{clemencon-2008-ranking-rates} to listwise ranking with aggregation (as framed by Duchi)? The next step would be to apply a Hoeffding decomposition to the empirical risk \ref{ref:er} for \(k=3\) and see if the terms can be controlled similarly.
+  \item Can we extend the results of Clemencon et al.~\cite{clemencon-2008-ranking-rates} to listwise ranking with aggregation (as framed by Duchi)? The next step would be to apply a Hoeffding decomposition to the empirical risk \ref{eq:er} for \(k=3\) and see if the terms can be controlled similarly.
   \item What is the next step in deriving fast rates for the case of bipartite ranking? Can Proposition 12 from Clemencon et al.~\cite{clemencon-2008-ranking-rates} be tightened?
   \item How can we unify the notions of aggregation from Duchi and normalization from Ravikumar?
-  \item Is the model selection problem more interesting? In particular for the case of listwise ranking.
+  \item Is the model selection problem more interesting? In particular for the case of listwise ranking in an online setting.
+  \item From the conclusion of Duchi: investigate aggregation functions that yield non-point distributions as \(k\rightarrow \infty\). For example, scaling the Thurstone–Mosteller least-squares solutions by \(\sqrt k\) to achieve asymptotic normality could lead to more robust solutions.
+  \item Ravikumar et al.~\cite{ravikumar-2011-ranking} stress the importance of normalizing the relevance labels by the maximum possible NDCG to ensure `robustness' to less likely but influential samples. Can this normalization be estimated with an EM type or other iterative approach?
 \end{itemize}
 
 \bibliography{summary}{}
