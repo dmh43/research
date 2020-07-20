@@ -110,10 +110,10 @@ where $A = s(\{Y_i\}_{i=1}^k)$. Note that this is different from the typical 0-1
 Given the loss function \(L\) we define the loss over a distribution of preference information \(\mu\) as:
 
 \begin{equation}
-  \ell(\alpha, \mu) = \int L(alpha, s) d\mu(s)
+  \ell(\alpha, \mu) = \int L(\alpha, s) d\mu(s)
 \end{equation}
 
-For the case where the preference information \(Y_i\) is a matrix of pairwise preferences and the aggregation function is the average, then this reduces to: \(ell(alpha, \mu) = L(\alpha, Y_{i,j}^\mu)\) where \(Y_{i,j}^\mu\) is the average preference of item \(i\) over item \(j\) according to the distribution \(\mu\).
+For the case where the preference information \(Y_i\) is a matrix of pairwise preferences and the aggregation function is the average, then this reduces to: \(ell(\alpha, \mu) = L(\alpha, Y_{i,j}^\mu)\) where \(Y_{i,j}^\mu\) is the average preference of item \(i\) over item \(j\) according to the distribution \(\mu\).
 
 We define the ranking risk of our scoring function \(f: Q \rightarrow R^m\) as:
 
@@ -130,10 +130,10 @@ Similarly, we define the surrogate loss and surrogate risk as:
   R_\varphi(f) &= \sum_qp_q\ell_\varphi(f(q), \mu_q)
 \end{align}
 
-\subsection{Inconsistency Results}
+\subsubsection{Inconsistency Results}
 
 
-\subsection{Proving a ULLN for the U-statistics Based Risk Functional}
+\subsubsection{Proving a ULLN for the U-statistics Based Risk Functional}
 
 Define the U-statistics based empirical risk:
 
@@ -235,11 +235,51 @@ problem discussed here is more general, bipartite ranking does not
 consider the impact of a query context nor does it consider graded
 relevance levels.
 
+\subsection{Ranking and Empirical Minimization of $U$-Statistics}
+Cl\`{e}men\c{c}on et al. \cite{clemencon-2008-ranking-rates} explore
+fast rates for empirical risk minimization of $U$-statistics based
+loss functions of order $2$. In particular, they show that under
+suitable noise conditions, empirical risk minimization of the
+bipartite ranking loss gives fast rates dependent on the exponent in
+the satisfied noise condition. The low-noise condition is similar to
+that defined elsewhere (see Boucheron et
+al. \cite{boucheron-2005-fast-rates}) adapted for the $U$-statistics case:
+
+\[\text{Var}(h_r(X, Y)) \leq c \Lambda(r)^\alpha\]
+
+where $c$ is some positive constant and $\alpha \in [0, 1]$ is the coefficient determining the low-noise behavior. $h_r$ is the kernel defined in the Hoeffding decomposition of the empirical excess risk. Let $\Lambda(r)$ be the excess risk of a pairwise ranking function $r$:
+
+\begin{equation}
+  \label{eq:kernel}
+  h_r(x,y) = \mathbb{E}(\mathbb{I}((y-Y)r(x, X) < 0) - \mathbb{I}((y-Y)r^*(x, X) < 0)) - \Lambda(r)
+\end{equation}
+
+\subsubsection{Main results}
+
+Theorem 5 gives conditions under which we can achieve fast rates of convergence. The proof relies on 3 pieces:
+
+\begin{itemize}
+  \item The Hoeffding decomposition of the empirical excess risk into a sum of iid terms and a degenerate $U$-statistic of order $2$.
+  \item A moment inequality for $U$-processes of order $2$ (Theorem 11) to show that the degenerate component of the decomposition is small with high probability.
+  \item A bound on the excess risk in the iid case (Theorem 8.3 from Massart \cite{massart-2007-model-selection}).\footnote{It's still unclear to me how exactly Theorem 8.3 of Massart is applied. Is the moment bound used directly? In that case, how do we get $\delta$ in the statement of theorem 5 from $\delta/2$ in the proof? If the tail bound is used, then isnt Theorem 5 missing a constant term ($\kappa \epsilon^2_*$ in Massart)?}
+\end{itemize}
+
+Note that the moment inequality of Theorem 11 is largely based on the moment inequalities from Boucheron et al. \cite{boucheron-2005-moment-inequalities}. The proof is essentially application of the bounds present there in addition to a few applications of decoupling and un-decoupling steps (see de la Pe\~{n}a et al. chapter~3 \cite{de-la-pena-1999-decoupling}).
+
+The bound in Theorem 5 is stated in terms of expectations of Rademacher averages and chaoses; the corollaries show some examples on how to bound these terms for the case of VC classes.
+
+
 \textbf{Questions}
 
 \begin{itemize}
   \item Can we extend the results of Clemencon et al.~\cite{clemencon-2008-ranking-rates} to listwise ranking with aggregation (as framed by Duchi)? The next step would be to apply a Hoeffding decomposition to the empirical risk \ref{eq:er} for \(k=3\) and see if the terms can be controlled similarly.
-  \item What is the next step in deriving fast rates for the case of bipartite ranking? Can Proposition 12 from Clemencon et al.~\cite{clemencon-2008-ranking-rates} be tightened?
+    \begin{itemize}
+      \item First we must determine an analogous condition to Assumption 4 from \cite{clemencon-2008-ranking-rates} for the multi-partite case.
+    \end{itemize}
+  \item What is the next step in deriving fast rates for the case of bipartite ranking with a surrogate? Can Proposition 12 from Cl\`{e}men\c{c}on et al.~\cite{clemencon-2008-ranking-rates} be tightened?
+    \begin{itemize}
+      \item Cl\`{e}men\c{c}on et al. mention that Blanchard et al. \cite{blanchard-2003-rates} have explored this for binary classification.
+    \end{itemize}
   \item How can we unify the notions of aggregation from Duchi and normalization from Ravikumar?
   \item Is the model selection problem more interesting? In particular for the case of listwise ranking in an online setting.
   \item From the conclusion of Duchi: investigate aggregation functions that yield non-point distributions as \(k\rightarrow \infty\). For example, scaling the Thurstone–Mosteller least-squares solutions by \(\sqrt k\) to achieve asymptotic normality could lead to more robust solutions.

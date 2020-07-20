@@ -19,7 +19,8 @@
    (LaTeX-add-labels
     "eq:general-loss"
     "eq:er"
-    "eq:uni-dev")
+    "eq:uni-dev"
+    "eq:kernel")
    (LaTeX-add-environments
     '("Assumption" LaTeX-env-args ["argument"] 0)
     '("assumption" LaTeX-env-args ["argument"] 0)
