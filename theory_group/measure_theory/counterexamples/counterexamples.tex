@@ -1,0 +1,31 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[latin1]{inputenc}
+
+\title{Sub-sigma Fields as Information}
+\linespread{1.2}
+\begin{document}
+\maketitle
+
+Consider the probability space $(\Omega, \mathcal{F}, \mathbb{P})$
+and a sub-sigma field $\mathcal{A} \subset \mathcal{F}$.
+The sub-sigma field $\mathcal{A}$ is often thought of,
+intuitively, as containing a subset of the information in $\mathcal{F}$\footnote{We mean `information' in the casual sense, not in the sense of entropy.}. For example, we might think of $\mathbb{P}(B|\mathcal{A})$ as the probability of the event $B$ given the information in $\mathcal{A}$.
+
+Also recall that an event $B$ is independent of a sub-sigma field $\mathcal{A}$ if $\mathbb{P}(B | A) = \mathbb{P}(B)$ for all $A \in \mathcal{A}$. So, again intuitively, the information in $\mathcal{A}$ does not tell us anything about the probability of event $B$ occurring. Now a counter-example:
+
+Consider a probability space on the unit interval, $\Omega = [0, 1]$. Let $\mathcal{G}$ be the sigma-field of all countable sets and sets whose complement is countable. So each set in $\mathcal{G}$ has measure $0$ or $1$ and so is independent of each event in $\mathcal{F}$. However, notice that $\mathcal{G}$ also contains all the singleton events in $\mathcal{F}$ (those sets which contain only a single $\omega \in \Omega$). So knowing which of the events in $\mathcal{G}$ occurred is equivalent to knowing exactly which $\omega \in \Omega$ occurred! So in one sense, $\mathcal{G}$ contains no information about $\mathcal{F}$ (it is independent of it), and in another sense it contains all the information in $\mathcal{F}$.
+
+This example is taken from Billingsley example 4.6 \cite{billingsley1995probability}.
+
+\bibliography{counterexamples}
+\bibliographystyle{ieeetr}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
