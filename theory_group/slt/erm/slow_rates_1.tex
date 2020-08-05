@@ -14,7 +14,7 @@
 \begin{document}
 \maketitle
 
-Perhaps it isn't surprising, but it can be shown that for any
+Maybe it isn't surprising, but it can be shown that for any
 binary classification rule based on a dataset of a fixed size, there
 is some distribution for which the Bayes risk is $0$, but the expected risk of
 the classification rule is large. This holds for ERM (as well as any other
@@ -37,7 +37,7 @@ number of samples. More precisely:
 
 \end{theorem}
 
-More surprising is a result concerning the convergence \textit{rate}
+Here is a somewhat more surprising result concerning the convergence \textit{rate}
 of the risk for \textbf{all} $n$:
 
 \begin{theorem}[2]
@@ -51,18 +51,43 @@ of the risk for \textbf{all} $n$:
 
 In other words, even though a classification rule is consistent, one
 can always find a distribution such that the error probability
-decreases to $0$ arbitrarily slowly. Of course, this implies in order
+decreases to $0$ arbitrarily slowly. Of course, this means that in order
 to investigate the convergence rates associated with some algorithm,
 we have to make some assumptions on the distribution $(X, Y)$. A
 particular example is a ``low-noise'' condition specifying that the
 posterior distribution is regular at the boundary $\eta(x) =
 \mathbb{P}(Y =1 | X=x) = 1/2$ \cite{bartlett-2006-risk}.
 
-Now a proof sketch of the first theorem. For each $n$, we just need to
-identify that at least a single ``bad'' distribution exists.
+Now a proof of the first theorem. For each $n$, we just need to
+show that at least a single ``bad'' distribution exists. As a simple
+example, let $X \sim \operatorname{Uni}([i]_{i=0}^{k-1})$ for some
+positive integer $k$ and let the distribution over $(X, Y)$ be parameterized by the
+value of $B \sim \operatorname{Uni}[0, 1]$ independent of $X$ such that $Y =
+\operatorname{dyadic}(B; X)$ where $\operatorname{dyadic}(b; i)$ gives
+the value in the $ith$ position of the binary expansion of $b$ (so
+$\operatorname{dyadic}(1/2; 0) = 1$).
+
+Since we have a one-to-one mapping from $X$ to $Y$, the Bayes error
+rate is $0$ (how to deal with numbers with two different binary
+expansions is left as an exercise to the reader). Consider the
+expected error probability for a classifier $\phi_n$ based on a
+dataset of $n$ pairs $\{(X_i, Y_i)\}^n$:
+
+\begin{align}
+  \mathbb{P}(\phi_n(X; \{(X_i, Y_i)\}^n) \neq Y) &\geq 1/2 \mathbb{P}(X \not \in \{X_i\}^n) + 0\\
+  &= 1/2 (1- 1/k)^n
+\end{align}
+
+Where the inequality follows from conditioning on the event
+$\{X \not \in \{X_i\}^n\}$ and recognizing that in the best case
+either no error is made (since we already know the corresponding value
+of $\operatorname{dyadic}(B; X_i)$) or we make a mistake with
+probability $1/2$ since each element
+\(\operatorname{dyadic}(B; i) \sim \operatorname{Bernoulli}(1/2)\) and
+is independent of $X$ for $X \neq i$.
 
 The theorems and discussion are mostly from chapter 7 of Devroye et
-al. \cite{devroye-1996-pattern}.
+al.~\cite{devroye-1996-pattern}.
 
 \bibliography{../../../u_statistics/summary.bib}
 \bibliographystyle{ieeetr}
