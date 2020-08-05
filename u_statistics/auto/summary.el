@@ -1,31 +1,23 @@
 (TeX-add-style-hook
  "summary"
  (lambda ()
-   (TeX-add-to-alist 'LaTeX-provided-class-options
-                     '(("article" "a4paper" "10pt")))
-   (TeX-add-to-alist 'LaTeX-provided-package-options
-                     '(("babel" "english") ("inputenc" "utf8") ("tocbibind" "nottoc")))
-   (TeX-run-style-hooks
-    "latex2e"
-    "article"
-    "art10"
-    "babel"
-    "inputenc"
-    "tocbibind"
-    "amsfonts"
-    "amsmath"
-    "setspace"
-    "hyperref")
-   (LaTeX-add-labels
-    "eq:general-loss"
-    "eq:er"
-    "eq:uni-dev"
-    "eq:kernel")
-   (LaTeX-add-environments
-    '("Assumption" LaTeX-env-args ["argument"] 0)
-    '("assumption" LaTeX-env-args ["argument"] 0)
-    '("assumption" LaTeX-env-args ["argument"] 1)
-    '("theorem" LaTeX-env-args ["argument"] 0))
-   (LaTeX-add-bibliographies))
- :latex)
+   (LaTeX-add-bibitems
+    "devroye-1996-pattern"
+    "blanchard-2003-rates"
+    "massart-2007-model-selection"
+    "de-la-pena-1999-decoupling"
+    "boucheron-2005-fast-rates"
+    "boucheron-2005-moment-inequalities"
+    "bartlett-2006-risk"
+    "10.1214/aos/1079120129"
+    "undefined"
+    "10.1016/0304-4149"
+    "10.1007/978-1-4612-0537-1"
+    "10.1214/aop/1176989128"
+    "ravikumar-2011-ranking"
+    "zhang-2004-mc"
+    "duchi-2010-ranking"
+    "duchi-2013-ranking"
+    "clemencon-2008-ranking-rates"))
+ :bibtex)
 

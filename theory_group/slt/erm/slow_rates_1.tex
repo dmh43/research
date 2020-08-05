@@ -1,0 +1,75 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[latin1]{inputenc}
+
+\newenvironment{theorem}[1][]{\par\medskip
+   \noindent \textbf{Theorem~#1.} \rmfamily}{\medskip}
+
+\title{Slow Rates in ERM}
+% \author{Dany Haddad}
+\linespread{1.2}
+\begin{document}
+\maketitle
+
+Perhaps it isn't surprising, but it can be shown that for any
+binary classification rule based on a dataset of a fixed size, there
+is some distribution for which the Bayes risk is $0$, but the expected risk of
+the classification rule is large. This holds for ERM (as well as any other
+algorithm you might think of), but it does \textbf{not} mean that the risk is
+bounded away from zero for all $n$---notice the specification of a fixed
+sample size. The claim is that there is a ``bad'' distribution for
+\textbf{each} $n$, not that there is a distribution that is bad
+for all $n$ (otherwise we wouldn't have consistency guarantees). In
+other words, one cannot find a classification rule that is guaranteed
+to have a certain performance across all distributions given a fixed
+number of samples. More precisely:
+
+\begin{theorem}[1]
+  For each $\epsilon > 0$ and binary classification rule $\phi_n$ based on a dataset \(\mathcal{D} =
+  \{(X_i, Y_i)\}^n\) of $n$ samples, there exists a distribution over
+  $(X, Y)$ such that:
+  \[\inf_\phi\mathbb{P}(\phi(X) \neq Y) = 0\]
+  but:
+  \[\mathbb{P}(\phi_n(X) \neq Y) > \epsilon\]
+
+\end{theorem}
+
+More surprising is a result concerning the convergence \textit{rate}
+of the risk for \textbf{all} $n$:
+
+\begin{theorem}[2]
+  Let $\{a_n\}$ be any sequence of positive numbers decreasing to $0$
+  where $a_0=1/16$. Then, for any sequence of classification rules
+  there is a distribution over $(X, Y)$ such that for all $n$:
+  \[\inf_\phi\mathbb{P}(\phi(X) \neq Y) = 0\]
+  but:
+  \[\mathbb{P}(\phi_n(X) \neq Y) > a_n\]
+\end{theorem}
+
+In other words, even though a classification rule is consistent, one
+can always find a distribution such that the error probability
+decreases to $0$ arbitrarily slowly. Of course, this implies in order
+to investigate the convergence rates associated with some algorithm,
+we have to make some assumptions on the distribution $(X, Y)$. A
+particular example is a ``low-noise'' condition specifying that the
+posterior distribution is regular at the boundary $\eta(x) =
+\mathbb{P}(Y =1 | X=x) = 1/2$ \cite{bartlett-2006-risk}.
+
+Now a proof sketch of the first theorem. For each $n$, we just need to
+identify that at least a single ``bad'' distribution exists.
+
+The theorems and discussion are mostly from chapter 7 of Devroye et
+al. \cite{devroye-1996-pattern}.
+
+\bibliography{../../../u_statistics/summary.bib}
+\bibliographystyle{ieeetr}
+\end{document}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
