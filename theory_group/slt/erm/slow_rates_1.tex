@@ -27,7 +27,7 @@ other words, one cannot find a classification rule that is guaranteed
 to have a certain performance across all distributions given a fixed
 number of samples. More precisely:
 
-\begin{theorem}[1]
+\begin{theorem}[1]\label{theorem:1}
   For each $\epsilon > 0$ and binary classification rule $\phi_n$ based on a dataset \(\mathcal{D} =
   \{(X_i, Y_i)\}^n\) of $n$ samples, there exists a distribution over
   $(X, Y)$ such that:
@@ -58,11 +58,13 @@ particular example is a ``low-noise'' condition specifying that the
 posterior distribution is regular at the boundary $\eta(x) =
 \mathbb{P}(Y =1 | X=x) = 1/2$ \cite{bartlett-2006-risk}.
 
-Now a proof of the first theorem. For each $n$, we just need to
+\subsubsection*{Proof of Theorem 1}
+
+For each $n$, we just need to
 show that at least a single ``bad'' distribution exists. As a simple
 example, let $X \sim \operatorname{Uni}([i]_{i=0}^{k-1})$ for some
 positive integer $k$ and let the distribution over $(X, Y)$ be parameterized by the
-value of $B \sim \operatorname{Uni}[0, 1]$ independent of $X$ such that $Y =
+value of $B \sim \operatorname{Uni}[0, 1]$ independent of $X$ with $Y =
 \operatorname{dyadic}(B; X)$ where $\operatorname{dyadic}(b; i)$ gives
 the value in the $ith$ position of the binary expansion of $b$ (so
 $\operatorname{dyadic}(1/2; 0) = 1$).
@@ -79,12 +81,13 @@ dataset of $n$ pairs $\{(X_i, Y_i)\}^n$:
 \end{align}
 
 Where the inequality follows from conditioning on the event
-$\{X \not \in \{X_i\}^n\}$ and recognizing that in the best case
+\(\{X \not \in \{X_i\}^n\}\) and recognizing that in the best case
 either no error is made (since we already know the corresponding value
-of $\operatorname{dyadic}(B; X_i)$) or we make a mistake with
-probability $1/2$ since each element
+of \(\operatorname{dyadic}(B; X_i)\)) or we make a mistake with
+probability \(1/2\) since each element
 \(\operatorname{dyadic}(B; i) \sim \operatorname{Bernoulli}(1/2)\) and
-is independent of $X$ for $X \neq i$.
+is independent of \(X\) for \(X \neq i\). Now we can arrive at the
+claim by taking \(k\) arbitrarily large.
 
 The theorems and discussion are mostly from chapter 7 of Devroye et
 al.~\cite{devroye-1996-pattern}.

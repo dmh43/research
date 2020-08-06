@@ -22,6 +22,8 @@
     "graphicx"
     "hyperref"
     "inputenc")
+   (LaTeX-add-labels
+    "theorem:1")
    (LaTeX-add-environments
     '("theorem" LaTeX-env-args ["argument"] 0))
    (LaTeX-add-bibliographies
