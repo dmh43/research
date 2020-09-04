@@ -1,0 +1,38 @@
+* The Landscape of Empirical Risk for Non-convex Losses
+** Examples of non-convex losses
+- Non-linear least squares for binary classification
+$\el(y, x; \theta) = (y - \sigma(\langle x, \theta \rangle)) ^ 2$
+  - Has a global minimum that gradient descent finds
+- Robust regression
+$\el(y, x; \theta) = \rho(y - \langle x, \theta \rangle)$
+  - Local minimum can be found efficiently with gradient descent
+- Problems with missing data
+  - Mixture of gaussians
+    - Results from this work were used to give guarantees on EM in this context [2]
+- The rates derived for these applications are near optimal (near the mini-max rate)
+** Uniform Convergence and M-estimation
+- The empirical risk converges uniformly to the population risk under constraints on the size of the class of functions
+  - For example a parametric class with compact parameter space and integrable envelope function. (See theorem 19.4 and example 19.8 in [3])
+- However, uniform convergence alone does not guarantee tractable algorithms (multiple local minima/stationary points)
+** Theorem 1 Proof sketch
+- Consider an \epsilon-cover of the parameter space
+  - Decompose the deviation into a set of "bad" events
+  - Bound the probability of each bad event
+    - Apply the sub-gaussianity assumption to bound the deviation of the empirical risk from it's mean at the points in the cover.
+- The minimum value of $n$ comes from the constraint on the size of \epsilon required to attain the bound.
+** Theorem 1 Discussion
+- Applies in the high dimensional regime
+  - p grows with n
+- How strong are these assumptions?
+- How large can the constants be?
+** Theorem 2
+- Relies on some results from differential topology and morse theory
+a)
+  - Decompose the parameter space into open sets D_i containing a single critical point \theta_i each.
+  - Show that the empirical risk contains a single critical point \hat{\theta}_i with the same index in that set.
+b)
+  - Use a taylor expansion (and the conditions of the theorem) to bound the size of the D_i and thus the distance between \theta_i and \hat{\theta}_i
+* References
+[1] Mei, S., Bai, Y., Montanari, A. (2016). The Landscape of Empirical Risk for Non-convex Losses arXiv https://arxiv.org/abs/1607.06534
+[2] Zhao, R., Li, Y., Sun, Y. (2020). Statistical convergence of the EM algorithm on Gaussian mixture models Electronic Journal of Statistics  14(1), 632-660. https://dx.doi.org/10.1214/19-ejs1660
+[3] Vaart, A. (1998). Asymptotic Statistics https://dx.doi.org/10.1017/cbo9780511802256
