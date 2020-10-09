@@ -1,0 +1,143 @@
+* Notes on Linear Inverse Problems without RIP
+This is a collections of notes centered around "Mathematics of sparsity (and a few
+other things)" from Emmanuel Candes [4]. I try to go a bit deeper into the
+derivation of the results and the intuition behind them than he
+does. The original paper only covers RIPless theory in the noiseless
+case, so we'll mostly restrict ourselves to that context. We will also
+focus on the compressed sensing problem since that is the most common
+form of linear inverse problem.
+
+Work on linear inverse problems explores conditions under which it is
+possible to recover a signal from linear measurements. Of particular
+interest is the case where the number of measurements is far fewer
+than the size of the ambient dimension of the target signal. The name
+"compressed sensing" arises from essentially that: rather than measure
+a signal and then compressing it to just the required information,
+instead, directly measure the compressed signal. More generally, we
+would like to recover a high-dimensional signal that has some
+low-dimensional structure (and thus is in some sense compressible). As
+discussed towards the end of [4], this theory goes pretty far and
+applies to problems such as source separation and demixing, robust
+PCA, phase retrieval, and matrix completion. Examples of
+low-dimensional structure include sparsity,
+low-rankness. Chandrasekaran et al. give a more exhaustive list in
+section 2.2 of [3].
+
+** Compressed sensing
+Consider the \ell_1 minimization problem in \mathbb{C}:
+
+min_x \|x\|_1 subject to: Ax = y
+
+We wish to recover an unknown vector \bar x given a set of linear
+measurements of the form y_i = <a_i, \bar x>. It's probably surprising
+that if \bar x is an s-sparse vector, and the measurement vectors a_i are
+sampled from an isotropic distribution (identity covariance matrix),
+we only need O(s log d) measurements to exactly recover \bar x from y by
+solving the \ell_1 minimization problem above. It's immediately clear
+that low-dimensional structure is not sufficient to ensure recovery of
+the unknown signal: we must also choose our sampling vectors a_i well.
+
+Note that the isotropy condition on the distribution of the sampling
+matrix ensures that the matrix 1/n \sum a_ia_i^* (where \cdot ^*
+denotes the conjugate-transpose) converges to the identity, meaning
+that the measurement matrix has a left inverse given enough
+measurements. Thus, any x is recoverable given sufficiently many
+samples. In constrast, without this condition, there would exist
+signals x that are not recoverable even with infinitely many samples
+(they lie in the nullspace of A in expectation). See the discussion in
+section 1.3 of [2].
+
+But isotropy of the sensing matrix with low-dimensional structure of
+the signal of interest is also not enough for recovery. Consider
+recovering an s-sparse signal using sampling vectors that are
+uniformly chosen from unit vectors along the coordinate axes. In this
+case, each sample reveals information about only a single entry, so we
+would require (as in the coupon collector problem) d log d samples to
+recover all the entries. In order to provide the rate of O(s log d)
+presented earlier, we need a bound on the "coherence" of the sampling
+vectors. Continuing with case of compressed sensing, we call \mu(F)
+the smallest value larger than the squared magnitude of the entries of
+a ~ F (either whp or wp 1). For sensing distributions F that have the
+isotropy property (identity covariance) this gives a smallest possible
+coherence \mu(F) of 1. In the case described earlier that displays the
+coupon collector behavior, we have a coherence of d, which is of
+course large since our rate is no longer logarithmic in the ambient
+dimension. Lighter tailed distributions lead to a lower incoherence
+than heavier tailed distributions (see the discussion after equation
+1.7 and in section 1.3 from [2]).
+
+To understand where these conditions come from, let's look at the KKT
+conditions for the \ell_1 minimization problem. A feasible point \hat
+x is optimal if we can find a dual certificate.
+
+First, forming the Lagrangian:
+
+\mathcal{L}(x, \lambda) = \|x\|_1 + \lambda^*(Ax - y)
+
+Applying first order optimality:
+
+\partial \|x\|_1 + A^*\lambda = 0
+
+So if there exists some vector u \in range(A^*) that is also a
+subgradient of the \ell_1 norm at x, then x is optimal. Notice that
+range(A^*) \perp null(A). Also, recall that \partial \|x\|_1 = {w |
+w_i = sign(x) if x_i > 0, w_i \in [-1, 1] otherwise}. So we obtain a
+dual certificate by finding some vector v \perp null(A) that is
+sign(x_i) on the support of x, and smaller than 1 in magnitude off the
+support of x.
+
+One way to arrive at such a v is to consider the "ansatz" problem introduced in section 4 of [4]:
+
+min \|v\|_2 subject to: v \perp null(A) and v_i = sign(x_i) for i in the support of x, v_i \in (-1, 1) for i off the support of x
+
+The solution for which can be found in closed form given that the
+nullspace of A has only a trivial intersection with the support of
+x. In fact, the solution to the above problem certifies more than
+optimality (notice (-1, 1) in the constraint compared to [-1, 1] from
+the subdifferential above), it also certifies that x is the unique
+solution:
+
+Following theorem 6.8 from Yuxin Chen's lecture notes for ELE 538B:
+
+Let T be the set of nonzero indices of x, let A_T be A with 0 in columns not in T (the restriction of A to the support of x). Assume further that A_T^*A_T is invertible. Consider x, an optimal solution to the \ell_1 minimization problem and a displacement vector h in the nullspace of A. By convexity of the feasible set, if z is another optimal solution, it must be of the form x + h.
+
+Let w be a subgradient of the \ell_1 norm at x:
+
+\|x + h \|_1 >= \|x\|_1 + <g, h>
+
+Rewriting <w, h> = <v, h> + <w - v, h> = <A^*u, h> + <w - v, h> for some u since v is in the range of A^*. The first term is 0 since h is in the nullspace of A. Now, we can choose w such that w_i = sign(x_i) if i \in T, and sign(h_i) otherwise. In that case, the second term reduces to:
+
+<w - v, h> = \sum_{i \not \in T} (sign(h_i) - v_i)h_i = \sum_{i \not \in T} |h_i| - v_ih_i
+
+But this is strictly greater than 0 unless h_i is 0 off the support of x. In that case, Ah = A_Th_T = 0 since h is in the nullspace of A. But A_T has full column rank, so h_T = 0 otherwise we have a contradiction. Putting it all together, we have \|x + h \|_1 > \|x\|_1 for all h in the nullspace of A, so x is the unique optimum.
+
+Section 4 of [4] shows how the equality constraint v_i = sign(x_i) can be loosened to hold approximately. The so-called "golfing" scheme then gives an iterative process for computing this approximate solution which can be shown to exist with high probability given the isotropy condition on the rows of A. See the proof of lemma 3.3 from [2].
+
+The matrix completion literature has analogous results, as discussed in [4].
+
+
+** Gaussian Models and Phase Transitions
+In the special case of a gaussian sampling matrix, the nullspace of A
+is uniformly randomly oriented in R^d.
+
+** No RIP
+Most of the work on compressed sensing relies on some condition
+similar to RIP. The work discussed here focuses on results obtained
+with conditions that are easier to verify than RIP (refer to the
+definition of RIP and it will be clear that it is difficult to
+verify). In constrast, RIP is a uniform condition (holds for all x)
+while the results discussed here apply only to a fixed x. Essentially,
+unlike in the RIP case, a given sampling matrix A can recover a fixed
+x with high probability, but that same A cannot be used to recovery
+arbitrary x. See the discussion in section 1.7 of [2].
+** Questions
+- Why is the ansatz problem of section 4 from [4] introduced?
+- The rates given in theorem 1 of [4] are tight up to a constant factor in the sense that there exist signals such that given fewer than \mu s log n samples, recovery is impossible. How to construct such a signal?
+** References
+[1] D. Amelunxen, M. Lotz, M. B. McCoy, and J. A. Tropp, "Living on the edge: Phase transitions in convex programs with random data," Arxiv, 2013.
+
+[2] E. J. Candes and Y. Plan, "A probabilistic and RIPless theory of compressed sensing," Arxiv, 2010.
+
+[3] V. Chandrasekaran, B. Recht, P. A. Parrilo, and A. S. Willsky, "The Convex Geometry of Linear Inverse Problems," Arxiv, 2010, doi: 10.1007/s10208-012-9135-7.
+
+[4] Candès, Emmanuel J. "Mathematics of sparsity (and a few other things)." Proceedings of the International Congress of Mathematicians, Seoul, South Korea. Vol. 123. Citesee, 2014.
