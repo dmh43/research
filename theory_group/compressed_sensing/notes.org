@@ -125,7 +125,7 @@ The matrix completion literature has analogous results, as discussed in [4].
 ** Gaussian Models and Phase Transitions
 Stated more generally than in the previous section,  x is the unique solution if and only iff the nullspace of A has only a trivial intersection with the directions that decrease the \ell_1 norm at x. In other words x, is the unique optimum iff null(A) \cap \mathcal{T}(\|cdot\|_1, x) = {0} where \mathcal{T}(\|cdot\|_1, x) is the tangent cone (or cone of descent) of the \ell_1 norm at x. Although straightforward to show, see the proof of proposition 2.1 in [3].
 
-[[./misses.png]]
+[[./miss.png]]
 
 The \ell_1 (ball shown in a) and nuclear (ball for symmetric 2x2 matrices shown in b) norm have small tangent cones at sparse points, which explains why we arrive at sparse solutions:
 
