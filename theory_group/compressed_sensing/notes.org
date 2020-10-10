@@ -24,16 +24,16 @@ low-rankness. Chandrasekaran et al. give a more exhaustive list in
 section 2.2 of [3].
 
 ** Compressed sensing
-Consider the \ell_1 minimization problem in \mathbb{C}:
+Consider the l_1 minimization problem in {C}:
 
 min_x \|x\|_1 subject to: Ax = y
 
-We wish to recover an unknown vector \bar x given a set of linear
-measurements of the form y_i = <a_i, \bar x>. It's probably surprising
-that if \bar x is an s-sparse vector, and the measurement vectors a_i are
+We wish to recover an unknown vector !x! given a set of linear
+measurements of the form y_i = <a_i, !x!>. It's probably surprising
+that if !x! is an s-sparse vector, and the measurement vectors a_i are
 sampled from an isotropic distribution (identity covariance matrix),
-we only need O(s log d) measurements to exactly recover \bar x from y by
-solving the \ell_1 minimization problem above. It's immediately clear
+we only need O(s log d) measurements to exactly recover !x! from y by
+solving the l_1 minimization problem above. It's immediately clear
 that low-dimensional structure is not sufficient to ensure recovery of
 the unknown signal: we must also choose our sampling vectors a_i well.
 
@@ -71,7 +71,7 @@ than heavier tailed distributions (see the discussion after equation
 *** Certifying Optimality and Uniqueness
 
 To understand where these conditions come from, let's look at the KKT
-conditions for the \ell_1 minimization problem. A feasible point \hat
+conditions for the l_1 minimization problem. A feasible point \hat
 x is optimal if we can find a dual certificate.
 
 First, forming the Lagrangian:
@@ -83,7 +83,7 @@ Applying first order optimality:
 \partial \|x\|_1 + A^*\lambda = 0
 
 So if there exists some vector u \in range(A^*) that is also a
-subgradient of the \ell_1 norm at x, then x is optimal. Notice that
+subgradient of the l_1 norm at x, then x is optimal. Notice that
 range(A^*) \perp null(A). Also, recall that \partial \|x\|_1 = {w |
 w_i = sign(x) if x_i > 0, w_i \in [-1, 1] otherwise}. So we obtain a
 dual certificate by finding some vector v \perp null(A) that is
@@ -103,9 +103,9 @@ solution:
 
 Following theorem 6.8 from Yuxin Chen's lecture notes for ELE 538B:
 
-Let T be the set of nonzero indices of x, let A_T be A with 0 in columns not in T (the restriction of A to the support of x). Assume further that A_T^*A_T is invertible. Consider x, an optimal solution to the \ell_1 minimization problem and a displacement vector h in the nullspace of A. By convexity of the feasible set, if z is another optimal solution, it must be of the form x + h.
+Let T be the set of nonzero indices of x, let A_T be A with 0 in columns not in T (the restriction of A to the support of x). Assume further that A_T^*A_T is invertible. Consider x, an optimal solution to the l_1 minimization problem and a displacement vector h in the nullspace of A. By convexity of the feasible set, if z is another optimal solution, it must be of the form x + h.
 
-Let w be a subgradient of the \ell_1 norm at x:
+Let w be a subgradient of the l_1 norm at x:
 
 \|x + h \|_1 >= \|x\|_1 + <g, h>
 
@@ -123,33 +123,33 @@ The matrix completion literature has analogous results, as discussed in [4].
 
 
 ** Gaussian Models and Phase Transitions
-Stated more generally than in the previous section,  x is the unique solution if and only iff the nullspace of A has only a trivial intersection with the directions that decrease the \ell_1 norm at x. In other words x, is the unique optimum iff null(A) \cap \mathcal{T}(\|cdot\|_1, x) = {0} where \mathcal{T}(\|cdot\|_1, x) is the tangent cone (or cone of descent) of the \ell_1 norm at x. Although straightforward to show, see the proof of proposition 2.1 in [3].
+Stated more generally than in the previous section,  x is the unique solution if and only iff the nullspace of A has only a trivial intersection with the directions that decrease the l_1 norm at x. In other words x, is the unique optimum iff null(A) \cap \mathcal{T}(\|\cdot\|_1, x) = {0} where \mathcal{T}(\|\cdot\|_1, x) is the tangent cone (or cone of descent) of the l_1 norm at x. Although straightforward to show, see the proof of proposition 2.1 in [3].
 
 [[./miss.png]]
 
-The \ell_1 (ball shown in a) and nuclear (ball for symmetric 2x2 matrices shown in b) norm have small tangent cones at sparse points, which explains why we arrive at sparse solutions:
+The l_1 (ball shown in a) and nuclear (ball for symmetric 2x2 matrices shown in b) norm have small tangent cones at sparse points, which explains why we arrive at sparse solutions:
 
 [[./norms.png]]
 
 Gordon's "escape through the mesh" lemma bounds the probability that a uniformly distributed subspace misses a convex cone [5]. We can use this result to provide sample requirements for recovery success whp for the gaussian case. Stating a corollary (3.3 in [3]) of the theorem:
 
-For a convex cone C \in R^d and an n x d gaussian map A, null(A) \cap C = {0} with high probabily if n (number of samples) \geq w(C)^2 + 1 where w(C) is the gaussian width of the cone C.
+For a convex cone C \in R^d and an n x d gaussian map A, null(A) \cap C = {0} with high probabily if n (number of samples) >= w(C)^2 + 1 where w(C) is the gaussian width of the cone C.
 
-The gaussian width of a set C is given by: w(C) = \mathbb{E} \sup_{z \in C \cap S^{d-1}} g^*z where g \sim N(0, 1) and S^{d-1} is the unit sphere in d dimensions. Notice that this is a expected supremum of a gaussian process and can be bound by Dudley's inequality, but computing covering numbers for convex cones is difficult (see theorem 3.5 of [3]).
+The gaussian width of a set C is given by: w(C) = {E} sup_{z \in C \cap S^{d-1}} g^*z where g \sim N(0, 1) and S^{d-1} is the unit sphere in d dimensions. Notice that this is a expected supremum of a gaussian process and can be bound by Dudley's inequality, but computing covering numbers for convex cones is difficult (see theorem 3.5 of [3]).
 
 With this result, we can give a bound on the required number of samples for recovery (see proposition 3.10 in [3]):
 
-Let \bar x be an s-sparse vector in R^d. Recovery by \ell_1 minimization succeeds whp if we have at least 2s log(d/s) + 5/4 s + 1 random gaussian samples.
+Let !x! be an s-sparse vector in R^d. Recovery by l_1 minimization succeeds whp if we have at least 2s log(d/s) + 5/4 s + 1 random gaussian samples.
 
 The proof proceeds by bounding the gaussian width:
 
-Apply weak duality to show that w(C) \leq \mathbb{E} dist(g, C^\circ) where dist is the euclidean distance and C^\circ is the polar cone of C. Since we seek to bound the gaussian width of the \ell_1 tangent cone at \bar x, this shows that we only need to bound the expected distance of a gaussian vector to the \ell_1 normal cone at \bar x. The normal cone is simply the conic hull of the subdifferential at x.
+Apply weak duality to show that w(C) <= {E} dist(g, C^\circ) where dist is the euclidean distance and C^\circ is the polar cone of C. Since we seek to bound the gaussian width of the l_1 tangent cone at !x!, this shows that we only need to bound the expected distance of a gaussian vector to the l_1 normal cone at !x!. The normal cone is simply the conic hull of the subdifferential at x.
 
 Continuing with the application of the corollary, we want to bound w(C)^2, so applying Jensen's:
 
-w(C) \leq \mathbb{E} dist(g, \partial\|\bar x\|_1)^2 = \mathbb{E}\inf_{w} \sum (g_i - w_i)^2 for w \in cone{\partial\|\bar x\|_1}. Breaking up the sum:
+w(C) <= {E} dist(g, \partial\|!x!\|_1)^2 = {E}\inf_{w} \sum (g_i - w_i)^2 for w \in cone{\partial\|!x!\|_1}. Breaking up the sum:
 
-\mathbb{E} \inf_{w} \sum (g_i - w_i)^2 = \mathbb{E}\inf_{t, |w_i| \leq 1} \sum_{i \in T} (g_i - sign(\bar x_i)t)^2 + \sum_{i \not \in T} (g_i - sign(\bar w_i)t)^2 (we introduce t since we consider w in the conic hull of the subdifferential).
+{E} \inf_{w} \sum (g_i - w_i)^2 = {E}\inf_{t, |w_i| <= 1} \sum_{i \in T} (g_i - sign(!x!_i)t)^2 + \sum_{i \not \in T} (g_i - sign(w_i)t)^2 (we introduce t since we consider w in the conic hull of the subdifferential).
 
 Then for any t, the first term is at most s(1 + t^2) (by taking expectation). The second term is bound by applying integration by parts, applying the bound on the gaussian hazard function: 1/x \phi(x) and then finally optimizing to minimize the upper bound and noting that (1-s/d)/(\pi \sqrt{log (d/s)} < 1/4. See Appendix C of [3] for details.
 
