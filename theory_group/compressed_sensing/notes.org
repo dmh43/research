@@ -4,7 +4,7 @@ other things)" from Emmanuel Candes [4]. I try to go a bit deeper into the
 derivation of the results and the intuition behind them than he
 does. The original paper only covers RIPless theory in the noiseless
 case, so we'll mostly restrict ourselves to that context. We will also
-focus on the compressed sensing problem since that is the most common
+focus on the compressed sensing problem since that is the most broadly discussed
 form of linear inverse problem.
 
 Work on linear inverse problems explores conditions under which it is
