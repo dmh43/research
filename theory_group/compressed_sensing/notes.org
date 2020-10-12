@@ -153,8 +153,15 @@ w(C) <= {E} dist(g, \partial\|\bar{x}\|_1)^2 = {E}\inf_{w} \sum (g_i - w_i)^2 fo
 
 Then for any t, the first term is at most s(1 + t^2) (by taking expectation). The second term is bound by applying integration by parts, applying the bound on the gaussian hazard function: 1/x \phi(x) and then finally optimizing to minimize the upper bound and noting that (1-s/d)/(\pi \sqrt{log (d/s)} < 1/4. See Appendix C of [3] for details.
 
+*** Phase Transitions in the Gaussian case
 
 Earlier, we saw that the we require an incoherent and isotropic sampling distribution. In the special case of a gaussian sampling matrix, the nullspace of A is uniformly distributed over the subspaces of dimension d - m in R^d (meaning that the nullspace is distributed as a random rotation of a d-m subspace).
+
+Consider a subspace M of size m and another randomly oriented subspace N of size n in d dimensions. The probability that the subspaces have a non-trivial intersection is 1 if m + n > d and 0 otherwise. Analogously to the sharp phase transition seen here, we also see sharp phase transitions for the intersection of randomly oriented convex cones. The recovery bounds discussed previously arise from bounds on the probability that a cone (the cone of descent of the objective) has a non-trivial intersection with a subspace (the nullspace of our sensing matrix). Thus, we see a similar phase transition for the probability of successful recovery. See [1].
+
+[[./phase.png]]
+
+
 
 ** No RIP
 Most of the work on compressed sensing relies on some condition
