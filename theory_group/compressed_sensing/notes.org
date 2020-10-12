@@ -24,7 +24,7 @@ low-rankness. Chandrasekaran et al. give a more exhaustive list in
 section 2.2 of [3].
 
 ** Compressed sensing
-Consider the l_1 minimization problem in {C}:
+Consider the l_1 minimization problem in R^d:
 
 min_x \|x\|_1 subject to: Ax = y
 
