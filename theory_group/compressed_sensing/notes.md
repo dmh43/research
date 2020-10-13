@@ -1,4 +1,5 @@
-* Notes on Linear Inverse Problems without RIP
+# Notes on Linear Inverse Problems without RIP
+
 This is a collections of notes centered around "Mathematics of sparsity (and a few
 other things)" from Emmanuel Candes [4]. I try to go a bit deeper into the
 derivation of the results and the intuition behind them than he
@@ -23,10 +24,11 @@ low-dimensional structure include sparsity,
 low-rankness. Chandrasekaran et al. give a more exhaustive list in
 section 2.2 of [3].
 
-** Compressed sensing
-Consider the l_1 minimization problem in R^d:
+## Compressed sensing
 
-min_x \|x\|_1 subject to: Ax = y
+Consider the l_1 minimization problem in $\mathbb{R}^d$:
+
+$min_x \|x\|_1 subject to: Ax = y$
 
 We wish to recover an unknown vector \bar{x} given a set of linear
 measurements of the form y_i = <a_i, \bar{x}>. It's probably surprising
@@ -37,7 +39,7 @@ solving the l_1 minimization problem above. It's immediately clear
 that low-dimensional structure is not sufficient to ensure recovery of
 the unknown signal: we must also choose our sampling vectors a_i well.
 
-*** Conditions on the sampling vectors
+### Conditions on the sampling vectors
 
 Note that the isotropy condition on the distribution of the sampling
 matrix ensures that the matrix 1/n \sum a_ia_i^* (where \cdot ^*
@@ -68,7 +70,7 @@ dimension. Lighter tailed distributions lead to a lower coherence
 than heavier tailed distributions (see the discussion after equation
 1.7 and in section 1.3 from [2]).
 
-*** Certifying Optimality and Uniqueness
+### Certifying Optimality and Uniqueness
 
 To understand where these conditions come from, let's look at the KKT
 conditions for the l_1 minimization problem. A feasible point \hat
@@ -115,21 +117,22 @@ Rewriting <w, h> = <v, h> + <w - v, h> = <A^*u, h> + <w - v, h> for some u since
 
 But this is strictly greater than 0 unless h_i is 0 off the support of x. In that case, Ah = A_Th_T = 0 since h is in the nullspace of A. But A_T has full column rank, so h_T = 0 otherwise we have a contradiction. Putting it all together, we have \|x + h \|_1 > \|x\|_1 for all h in the nullspace of a, so x is the unique optimum.
 
-[[./unique.png]]
+![](./unique.png)
 
 Section 4 of [4] shows how the equality constraint v_i = sign(x_i) can be loosened to hold approximately. The so-called "golfing" scheme then gives an iterative process for computing this approximate solution which can be shown to exist with high probability given the isotropy condition on the rows of A. See the proof of lemma 3.3 from [2].
 
 The matrix completion literature has analogous results, as discussed in [4].
 
 
-** Gaussian Models and Phase Transitions
+## Gaussian Models and Phase Transitions
+
 Stated more generally than in the previous section,  x is the unique solution if and only iff the nullspace of A has only a trivial intersection with the directions that decrease the l_1 norm at x. In other words x, is the unique optimum iff null(A) \cap \mathcal{T}(\|\cdot\|_1, x) = {0} where \mathcal{T}(\|\cdot\|_1, x) is the tangent cone (or cone of descent) of the l_1 norm at x. Although straightforward to show, see the proof of proposition 2.1 in [3].
 
-[[./miss.png]]
+![](./miss.png)
 
 The l_1 (ball shown in a) and nuclear (ball for symmetric 2x2 matrices shown in b) norm have small tangent cones at sparse points, which explains why we arrive at sparse solutions:
 
-[[./norms.png]]
+![](./norms.png)
 
 Gordon's "escape through the mesh" lemma bounds the probability that a uniformly distributed subspace misses a convex cone [5]. We can use this result to provide sample requirements for recovery success whp for the gaussian case. Stating a corollary (3.3 in [3]) of the theorem:
 
@@ -153,17 +156,18 @@ w(C) <= {E} dist(g, \partial\|\bar{x}\|_1)^2 = {E}\inf_{w} \sum (g_i - w_i)^2 fo
 
 Then for any t, the first term is at most s(1 + t^2) (by taking expectation). The second term is bound by applying integration by parts, applying the bound on the gaussian hazard function: 1/x \phi(x) and then finally optimizing to minimize the upper bound and noting that (1-s/d)/(\pi \sqrt{log (d/s)} < 1/4. See Appendix C of [3] for details.
 
-*** Phase Transitions in the Gaussian case
+### Phase Transitions in the Gaussian case
 
 Earlier, we saw that the we require an incoherent and isotropic sampling distribution. In the special case of a gaussian sampling matrix, the nullspace of A is uniformly distributed over the subspaces of dimension d - m in R^d (meaning that the nullspace is distributed as a random rotation of a d-m subspace).
 
 Consider a subspace M of size m and another randomly oriented subspace N of size n in d dimensions. The probability that the subspaces have a non-trivial intersection is 1 if m + n > d and 0 otherwise. Analogously to the sharp phase transition seen here, we also see sharp phase transitions for the intersection of randomly oriented convex cones. The recovery bounds discussed previously arise from bounds on the probability that a cone (the cone of descent of the objective) has a non-trivial intersection with a subspace (the nullspace of our sensing matrix). Thus, we see a similar phase transition for the probability of successful recovery. See [1].
 
-[[./phase.png]]
+![](./phase.png)
 
 
 
-** No RIP
+## No RIP
+
 Most of the work on compressed sensing relies on some condition
 similar to RIP. The work discussed here focuses on results obtained
 with conditions that are easier to verify than RIP (refer to the
@@ -173,11 +177,13 @@ while the results discussed here apply only to a fixed x. Essentially,
 unlike in the RIP case, a given sampling matrix A can recover a fixed
 x with high probability, but that same A cannot be used to recovery
 arbitrary x. See the discussion in section 1.7 of [2].
-** Questions
+
+## Questions
 - The rates given in theorem 1 of [4] are tight up to a constant factor in the sense that there exist signals such that given fewer than \mu s log n samples, recovery is impossible. How to construct such a signal?
 - Do we see similar phase transitions with non-gaussian sensing matrices?
 - Is the nullspace of other non-gaussian maps also uniformly distributed over subspaces in the codimension?
-** References
+
+## References
 [1] D. Amelunxen, M. Lotz, M. B. McCoy, and J. A. Tropp, "Living on the edge: Phase transitions in convex programs with random data," Arxiv, 2013.
 
 [2] E. J. Candes and Y. Plan, "A probabilistic and RIPless theory of compressed sensing," Arxiv, 2010.
