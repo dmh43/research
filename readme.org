@@ -1,0 +1,3 @@
+* Research notes
+See ~theory_group~ for the topics discussed in our group.
+See ~u_statistics~ for some work I've been doing on ranking.
