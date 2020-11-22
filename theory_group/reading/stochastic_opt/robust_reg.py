@@ -61,13 +61,9 @@ def get_sched(step, init):
 
 def main():
   stop_error = 0.001
-  # max_iters = 1e4
-  max_iters = 200
-  # max_iters = 10000
-  # step_size_inits = 10 ** np.arange(-3.0, 4.0)
+  max_iters = 1e4
   step_size_inits = 2 ** np.linspace(np.log2(10**2), np.log2(10**6), 10)
   # step_size_inits = 2 ** np.linspace(-4,5, 10) # For GD
-  # step_size_inits = 10 ** 4 * 2 ** np.arange(-3.0, 5.0)
   dimension = 40
   num_rows = 1000
   x_init = np.random.normal(size=dimension)
