@@ -26,7 +26,7 @@ class L1SGM():
 
   def minimize(self, init, step_size_sched, step, n_iters=None, stop_error=None, max_iters=None):
     assert (n_iters is None) or (stop_error is None)
-    assert (n_iters is not None) or (max_iters is not None)
+    assert not ((n_iters is not None) and (max_iters is not None))
     objs = []
     xs = []
     x = init
@@ -45,7 +45,7 @@ class L1SGM():
       elif step == 'trunc': x = x - g * min(step_size, f / np.sum(g ** 2))
       objs.append(self.objective(x))
       xs.append(x)
-      if (objs[-1] <= stop_error) or (t == max_iters): break
+      if ((stop_error is not None) and (objs[-1] <= stop_error)) or ((max_iters is not None) and (t == max_iters)): break
     return xs, objs
 
 def get_sched(step, init):
