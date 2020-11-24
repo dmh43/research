@@ -24,7 +24,14 @@ class L1SGM():
   def f(self, x, y_i, a_i):
     return np.linalg.norm(y_i - self.pred(x, a_i), ord=1)
 
-  def minimize(self, init, step_size_sched, step, n_iters=None, stop_error=None, max_iters=None):
+  def minimize(self,
+               init,
+               step_size_sched,
+               step,
+               n_iters=None,
+               stop_error=None,
+               max_iters=None,
+               clip_gamma=None):
     assert (n_iters is None) or (stop_error is None)
     assert not ((n_iters is not None) and (max_iters is not None))
     objs = []
@@ -42,6 +49,7 @@ class L1SGM():
       g = self.subgrad(x, y_i, a_i)
       f = self.f(x, y_i, a_i)
       if step in ['sgm', 'gd']: x = x - step_size * g
+      elif step == 'clip': x = x - g * step_size * min(1, clip_gamma / np.linalg.norm(g))
       elif step == 'trunc': x = x - g * min(step_size, f / np.sum(g ** 2))
       objs.append(self.objective(x))
       xs.append(x)
@@ -56,7 +64,7 @@ def get_sched(step, init):
   def get_trunc_sched(init):
     for i in count(start=1): yield init * np.power(i, -1/2 - 1e-3)
   if step == 'gd': return get_gd_sched(init)
-  elif step == 'sgm': return get_sgm_sched(init)
+  elif step in ['clip', 'sgm']: return get_sgm_sched(init)
   elif step == 'trunc': return get_trunc_sched(init)
 
 def main():
@@ -70,7 +78,8 @@ def main():
 
   l1_sgm = L1SGM(num_rows, dimension, noise_std=0)
 
-  for step in ['sgm', 'trunc']:
+  clip_gamma = 0.25
+  for step in ['clip', 'sgm', 'trunc']:
   # for step in ['gd']:
     plt.figure()
     print(step)
@@ -79,7 +88,8 @@ def main():
                                  step_size_sched=get_sched(step=step, init=init),
                                  stop_error=stop_error,
                                  max_iters=max_iters,
-                                 step=step)
+                                 step=step,
+                                 clip_gamma=clip_gamma)
       print(objs[-1], init)
       plt.plot(np.clip(objs, None, 1e3), label=init)
       # plt.plot([np.linalg.norm(x - l1_sgm.x_0)**2 for x in xs], label=init)
