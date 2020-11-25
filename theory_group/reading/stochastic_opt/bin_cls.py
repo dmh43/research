@@ -1,3 +1,5 @@
+from collections import defaultdict
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import ortho_group
@@ -30,9 +32,11 @@ class L2BinaryClassification(Optimizer):
     return np.linalg.norm(y_i - self.pred(x, a_i), ord=2)**2
 
 def main():
-  stop_error = 0.001
+  stop_error = 0.1
   max_iters = 1e4
-  step_size_inits = 2 ** np.linspace(np.log2(10**-2), np.log2(10**1), 10)
+  # step_size_inits = 2 ** np.linspace(np.log2(10**-2), np.log2(10**1), 10)
+  # step_size_inits = 2 ** np.linspace(np.log2(10**0), np.log2(10**3), 20)
+  step_size_inits = 2 ** np.linspace(np.log2(10**0), np.log2(10**5), 10)
   # step_size_inits = 2 ** np.linspace(-15,-10, 10) # For GD
   dimension = 40
   num_rows = 1000
@@ -41,29 +45,34 @@ def main():
   l2_class = L2BinaryClassification(num_rows, dimension)
 
   clip_gamma = 0.25
-  print('best_loss: {}'.format(l2_class.objective(l2_class.x_0)))
-  for step in ['clip', 'sgm', 'trunc']:
-  # for step in ['gd']:
-    plt.figure()
-    print(step)
-    for init in step_size_inits:
-      xs, objs = l2_class.minimize(init=x_init,
-                                   step_size_sched=get_sched(step=step, init=init),
-                                   stop_error=stop_error,
-                                   max_iters=max_iters,
-                                   step=step,
-                                   clip_gamma=clip_gamma,
-                                   max_norm=5)
-      print(np.linalg.norm(xs[-1] - l2_class.x_0)**2, objs[-1], init)
-      plt.plot(np.clip(objs, None, 1e3), label=init)
-      # plt.plot([np.linalg.norm(x - l2_class.x_0)**2 for x in xs], label=init)
-    plt.legend()
-    plt.yscale('log')
-    # plt.ylim(10e-3, 10e-2)
-    plt.xlabel('Iteration number')
-    plt.ylabel('Objective')
-    # plt.ylabel('dist^2')
-    plt.title('Robust Regression ({})'.format(step.upper()))
+  f_x_star = l2_class.objective(l2_class.x_0)
+  print('best_loss: {}'.format(f_x_star))
+  max_norms = [1, 3, 6, 8, 10, None]
+  fig, axes = plt.subplots(3, 2, sharex='all', sharey='all')
+  axes = axes.reshape(-1)
+  for max_norm, ax in zip(max_norms, axes):
+    steps_required = defaultdict(dict)
+    for step in ['clip', 'sgm', 'trunc']:
+      print(step)
+      for init in step_size_inits:
+        xs, objs = l2_class.minimize(init=x_init,
+                                     step_size_sched=get_sched(step=step, init=init),
+                                     stop_error=stop_error,
+                                     max_iters=max_iters,
+                                     step=step,
+                                     clip_gamma=clip_gamma,
+                                     max_norm=max_norm)
+        steps_required[step][init] = len(xs)
+        print(np.linalg.norm(xs[-1] - l2_class.x_0)**2, objs[-1], init)
+    steps_required = pd.DataFrame(steps_required)
+    steps_required.plot(ax=ax)
+    ax.set_title('\mathcal X = B_2(0, {})'.format(max_norm) if max_norm is not None else '\mathcal X = \mathbb R^d')
+  fig.add_subplot(111, frameon=False)
+  # hide tick and tick label of the big axis
+  plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
+  plt.xlabel('Learning rate')
+  plt.ylabel('Iterations until loss = {}'.format(stop_error))
+  plt.xscale('log')
   plt.show()
 
 
