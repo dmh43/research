@@ -27,7 +27,8 @@ class Optimizer(ABC):
                n_iters=None,
                stop_error=None,
                max_iters=None,
-               clip_gamma=None):
+               clip_gamma=None,
+               max_norm=None):
     assert (n_iters is None) or (stop_error is None)
     assert not ((n_iters is not None) and (max_iters is not None))
     objs = []
@@ -48,6 +49,7 @@ class Optimizer(ABC):
       elif step == 'gd': x = x - step_size * g / len(self.y)
       elif step == 'clip': x = x - g * step_size * min(1, clip_gamma / np.linalg.norm(g))
       elif step == 'trunc': x = x - g * min(step_size, f / np.sum(g ** 2))
+      if max_norm is not None: x = x / np.linalg.norm(x) * min(max_norm, np.linalg.norm(x))
       objs.append(self.objective(x))
       xs.append(x)
       if ((stop_error is not None) and (objs[-1] <= stop_error)) or ((max_iters is not None) and (t == max_iters)): break

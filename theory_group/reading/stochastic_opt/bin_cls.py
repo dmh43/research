@@ -52,7 +52,8 @@ def main():
                                    stop_error=stop_error,
                                    max_iters=max_iters,
                                    step=step,
-                                   clip_gamma=clip_gamma)
+                                   clip_gamma=clip_gamma,
+                                   max_norm=5)
       print(np.linalg.norm(xs[-1] - l2_class.x_0)**2, objs[-1], init)
       plt.plot(np.clip(objs, None, 1e3), label=init)
       # plt.plot([np.linalg.norm(x - l2_class.x_0)**2 for x in xs], label=init)
