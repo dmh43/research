@@ -73,36 +73,36 @@ def main():
   fig.add_subplot(111, frameon=False)
   # hide tick and tick label of the big axis
   plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
+  plt.legend()
   plt.xlabel('Learning rate')
   plt.ylabel('Iterations until loss = {}'.format(stop_error))
   plt.xscale('log')
   plt.show()
 
   def boston():
-    stop_auc = 0.99
+    stop_auc = 0.95
     max_iters = 1e3
     # step_size_inits = 2 ** np.linspace(np.log2(10**0), np.log2(10**5), 10)
-    # step_size_inits = 2 ** np.linspace(np.log2(10**-2), np.log2(10**5), 20)
-    step_size_inits = 2 ** np.linspace(np.log2(10**-2), np.log2(10**5), 10)
+    step_size_inits = 2 ** np.linspace(np.log2(10**-2), np.log2(10**5), 20)
     A, y = load_breast_cancer(return_X_y=True)
-    A_train, A_test, y_train, y_test = train_test_split(A, y)
-    means, std = A_train.mean(0), A_train.std(0)
-    A_train = (A_train - means) / std
-    A_test = (A_test - means) / std
-    dimension = A_train.shape[1]
-    num_rows = A_train.shape[0]
-    x_init = np.random.normal(size=dimension)
-    l2_class = L2BinaryClassification(num_rows, dimension, A=A_train, y=y_train)
 
     clip_gamma = 0.25
-    max_norms = [15, 20, 30, 45, 60, None]
-    fig, axes = plt.subplots(3, 2, sharex='all', sharey='all')
-    axes = axes.reshape(-1)
-    stop_condition = lambda x: roc_auc_score(y_test, l2_class.pred(x, A_test)) > stop_auc
-    for max_norm, ax in zip(max_norms, axes):
-      steps_required = defaultdict(dict)
-      for step in ['clip', 'sgm', 'trunc']:
+    steps = ['clip', 'sgm', 'trunc']
+    colors = {'clip': 'orange', 'sgm': 'blue', 'trunc': 'green'}
+    lens = defaultdict(list)
+    for trials in range(10):
+      A_train, A_test, y_train, y_test = train_test_split(A, y)
+      means, std = A_train.mean(0), A_train.std(0)
+      A_train = (A_train - means) / std
+      A_test = (A_test - means) / std
+      dimension = A_train.shape[1]
+      num_rows = A_train.shape[0]
+      stop_condition = lambda x: roc_auc_score(y_test, l2_class.pred(x, A_test)) > stop_auc
+      x_init = np.random.normal(size=dimension)
+      l2_class = L2BinaryClassification(num_rows, dimension, A=A_train, y=y_train)
+      for step in steps:
         print(step)
+        lens[step].append([])
         for init in step_size_inits:
           xs, objs = l2_class.minimize(init=x_init,
                                        step_size_sched=get_sched(step=step, init=init),
@@ -110,20 +110,22 @@ def main():
                                        max_iters=max_iters,
                                        step=step,
                                        clip_gamma=clip_gamma,
-                                       max_norm=max_norm)
+                                       max_norm=None)
           test_auc = roc_auc_score(y_test, l2_class.pred(xs[-1], A_test))
-          steps_required[step][init] = len(xs)
+          lens[step][-1].append(len(xs))
           print(objs[-1], test_auc, init)
-      steps_required = pd.DataFrame(steps_required)
-      steps_required.plot(ax=ax)
-      ax.set_title('\mathcal X = B_2(0, {})'.format(max_norm) if max_norm is not None else '\mathcal X = \mathbb R^d')
-    fig.add_subplot(111, frameon=False)
-    # hide tick and tick label of the big axis
-    plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
+    lens = {step: np.array(info) for step, info in lens.items()}
+    meds = {step: np.median(lens[step], axis=0) for step in steps}
+    p15 = {step: np.quantile(lens[step], 0.15, axis=0) for step in steps}
+    p75 = {step: np.quantile(lens[step], 0.75, axis=0) for step in steps}
+    for step in steps:
+      plt.plot(step_size_inits, meds[step], label=step, color=colors[step])
+      plt.fill_between(step_size_inits, p15[step], p75[step], alpha=0.1, color=colors[step])
+    plt.title('\mathcal X = \mathbb R^d')
+    plt.legend()
     plt.xlabel('Learning rate')
     plt.ylabel('Iterations until Test AUC = {}'.format(stop_auc))
     plt.xscale('log')
-    plt.yscale('log')
     plt.show()
 
 
