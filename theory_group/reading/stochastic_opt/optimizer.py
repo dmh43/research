@@ -28,9 +28,8 @@ class Optimizer(ABC):
                stop_error=None,
                max_iters=None,
                clip_gamma=None,
-               max_norm=None):
-    assert (n_iters is None) or (stop_error is None)
-    assert not ((n_iters is not None) and (max_iters is not None))
+               max_norm=None,
+               stop_condition=None):
     objs = []
     xs = []
     x = init
@@ -53,6 +52,8 @@ class Optimizer(ABC):
       objs.append(self.objective(x))
       xs.append(x)
       if ((stop_error is not None) and (objs[-1] <= stop_error)) or ((max_iters is not None) and (t == max_iters)): break
+      if stop_condition is not None:
+        if stop_condition(x): break
     return xs, objs
 
 def get_sched(step, init):
