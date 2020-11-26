@@ -1,0 +1,96 @@
+#+LaTeX_CLASS: koma-article
+#+LaTeX_HEADER: \newcommand{\argmin}{\mathop{\mathrm{argmin}}}
+* Stability in stochastic optimization
+
+Here we summarize some of the key ideas and techniques from [1, 2]. The motivation for seeking "better models" in stochastic optimization is to reduce the impact and burden of hyperparameter selection, in particular, selection of the initial learning rate and learning rate schedule. Without proper selection of the learning rate, stochastic gradient descent can diverge or converge arbitrarily slowly[fn:1], even on convex problems.
+
+Somewhat more surprisingly, [1] shows fast convergence on a class of so-called "easy to optimize" problems (including convergence to stationary points for weakly-convex problems) and show that their methods give the fastest rates known for phase retrieval.
+
+We also relate the work on stability and convergence guarantees to those studied in the context of gradient clipping [3, 4] and empirical risk minimization for non-convex objectives [5]. The end of the notes also includes experimental results demonstrating the improved stability and convergence rates on synthetic and real datasets[fn:2].
+
+** Instability of gradient descent
+Gradient descent can behave badly even for the quadratic objective $F(x) = 1/2x^2$. For a learning rate schedule: $\alpha_k = \alpha_0 k^{-\beta}$ gradient descent proceeds as: $x_{k+1} = (1-\alpha_0k^{-\beta})x_k$. We have $|x_{k+1}| = |(1-\alpha_0k^{-\beta})||x_k|$ which for poorly specified $\alpha_0$ can be lower bounded by $2|x_k| = O(2^{k-1})$ for all $k \leq k_0$ where $k_0$ can potentially be large. So even in the case of a quadratic objective, the learning rate selection can lead to poor convergence[fn:3].
+
+The story is worse for more "difficult" objectives such as $F(x) = (e^x + e^{-x})$ which diverges for all polynomial learning rate schedules if the initialization is large enough[fn:4].
+
+** Problem setup and methods
+Consider the optimization problem:
+
+$$\min_{x \in \mathcal X} F(x)$$
+
+over a convex set $\mathcal X$ where $F(x) = \mathbb E_P f(x; S)$ for some loss function $f$ parametrized by $x$ and $S$ is a sample distributed as $P$. Given a sequence of samples $S_k \sim P$, The stochastic gradient method (SGM) proceeds by iterating:
+
+$$x_{k+1} = x_k - \alpha_k g_k$$
+
+where $g_k$ is an element of the subgradient of $f(x_k; \cdot)$ at $S_k$. Presenting SGM in this way frames it as a noisy approximation of gradient descent. Alternatively, we can view SGM as a minimization of a sequence of (random) linear approximations to the objective function $f$. To that end, consider the linear approximation to $f$ at $x_k$:
+
+$$f_{x_k}^{\text{SGM}}(y; s) = f(x_k; s) + \langle g_k, y-x_k \rangle$$
+
+Now we can frame SGM as minimizing a regularized version of this objective, iterating:
+
+$$x_{k+1} = \argmin_{x \in \mathcal X} f_{x_k}^{\text{SGM}}(x; S_k) + \frac{1}{2\alpha} \|x-x_k\|_2^2$$
+
+Proximal point and prox-linear methods can also be viewed in this model-based framework. For the duration of these notes, we focus on the so-called \emph{truncated model} which applies when $f$ has a known lower bound. Without loss of generality, we assume this lower bound is $0$: $f(\cdot; s) > 0$ for all $s$ in the sample space $\mathcal S$:
+
+$$f_x^{\text{trunc}}(y; s) = \left[ f_{x}^{\text{SGM}}(y; s) \right]_+ = \max\{0, f(x; s) + \langle g_k, y-x \rangle \}$$
+
+** From better models to stability to (asymptotically) optimal convergence
+Arguably, the truncated model of the previous section is "better" (or at least more faithful) than the naive linear model of SGM. Asi and Duchi show [1] that for convex functions whose gradients grow at most polynomially, the iterates of the truncated method are bounded with probability 1. This is precisely the additional condition needed for proposition 1 and theorem 2 which together guarantee almost sure convergence of the iterates to the optimum as well as asymptotically optimal convergence.
+
+In particular, the averaged iterates $\bar x_k = 1/k \sum_i^k x_i$ are asymptotically normal:
+
+$$\sqrt k(\bar x_k - x^*) \xrightarrow{d} N(0, \Sigma(x^*))$$
+
+where $\Sigma(x^*) = \nabla^2 F(x^*)^{-1} Cov(\nabla f(x^*; S)) \nabla^2 F(x^*)^{-1}$.
+
+*** Local Asymptotic Minimax Optimality
+As in the context of estimation [9 section 8.3], minimax lower bounds are often too coarse (see the discussion in the introduction of [10]), so we instead consider minimax optimallity within a neighborhood that shrinks as the iteration number increases (for M-estimation we consider smaller parameter sets with increasing sample size). Generally, in stochastic optimization, the objective function is known, but the distribution of the samples $S \sim P$ is not known. Analogously to the estimation case, we consider a shrinking neighborhood of distributions (with KL divergence within some range).
+
+Corollary 2 of [10] gives us the following result (recalled informally): the limit behavior of $\|\sqrt k (\bar x_k - x^*)\|_2$ is lower bounded by $\|Z\|_2$ where $Z \sim N(0, \Sigma(x^*) )$. This shows that the convergence of the truncated method is locally asymptotically optimal in the minimax sense. As in the estimation case (recall the behavior of the Hodges estimator at 0), it can be shown that the set of samples on which $\bar x_k$ is strictly better than $Z$ in expectation has measure 0.
+
+*** Results for weakly-convex functions
+[1] also shows that for coercive[fn:5], weakly convex functions that satisfy the following "relative noise" condition on $f'$, the proximal model method has bounded iterates:
+
+$$Var(f'(x;S)) \leq C_1\|F'(x)\|_2^2 + C_2$$
+
+Although there is no discussion of this condition for the truncated model method, the condition looks very similar to the relaxation of the Lipschitz smoothness condition explored in [3] as part of their analysis of gradient clipping. Accordingly, we include a comparison to SGM with gradient clipping in our experimental results section.
+
+In addition, for weakly-convex functions whose set of stationary points have an image of Lebesgue measure 0, [1] shows that methods with bounded iterates converge to stationary points. This is reminiscent of the conditions and results in [5]. In an attempt to connect the two, we check the required conditions for an application addressed in [5] (non-convex binary classification) as well as explore some experimental results for this problem.
+
+** Fast rates and easy problems
+
+
+* References
+
+
+[1] Asi, H. & Duchi, J. C. The importance of better models in stochastic optimization. Arxiv (2019).
+
+[2] Asi, H. & Duchi, J. C. Stochastic (Approximate) Proximal Point Methods: Convergence, Optimality, and Adaptivity. Arxiv (2018) doi:10.1137/18m1230323.
+
+[3] Zhang, J., He, T., Sra, S. & Jadbabaie, A. Why gradient clipping accelerates training: A theoretical justification for adaptivity. Arxiv (2019).
+
+[4] Sra, S. Why Adam Beats SGD for Attention Models. (n.d.).
+
+[5] Mei, S., Bai, Y. & Montanari, A. The Landscape of Empirical Risk for Non-convex Losses. Arxiv (2016).
+
+[6] Nemirovski, A., Juditsky, A., Lan, G. & Shapiro, A. Robust Stochastic Approximation Approach to Stochastic Programming. Siam J Optimiz 19, 1574–1609 (2009).
+
+[7] Mendelson, S. Learning without Concentration. Arxiv (2014).
+
+[8] Duchi, J. & Ruan, F. Asymptotic Optimality in Stochastic Optimization. Arxiv (2016).
+
+[9] Vaart,  van der. Asymptotic Statistics. 1–458 (1998).
+
+[10] Duchi, J. & Ruan, F. Asymptotic Optimality in Stochastic Optimization. Arxiv (2016).
+
+* Footnotes
+
+[fn:5] Go to infinity as the norm of the argument goes to infinity
+
+[fn:4] See [[https://math.stackexchange.com/questions/3888270/solution-verification-divergence-of-gradient-descent-recursive-sequence][this math stack exchange question]]
+
+[fn:3] See example 2 in [2]
+
+[fn:2] Code available on [[https://github.com/dmh43/research/tree/master/theory_group/reading/stochastic_opt][github.com/dmh43/research]]
+
+[fn:1] I haven't gone through this example, but Asi and Duchi [2] cite Nemirovski for this [6]
