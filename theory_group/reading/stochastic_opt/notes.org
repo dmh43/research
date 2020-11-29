@@ -1,10 +1,15 @@
 #+LaTeX_CLASS: koma-article
 #+LaTeX_HEADER: \newcommand{\argmin}{\mathop{\mathrm{argmin}}}
+#+PROPERTY: header-args :exports none :tangle "~/Documents/My_Library.bib"
+#+BIBLIOGRAPHY: /Users/danyhaddad/Documents/My_Library plain option:-d
+#+LATEX_HEADER: \usepackage[style=verbose,backend=bibtex, citestyle=authoryear, style=numeric]{biblatex}
+#+LATEX_HEADER: \addbibresource{/Users/danyhaddad/Documents/My_Library.bib}
+#+LATEX_HEADER: \hypersetup{colorlinks=true, urlcolor=cyan,}
+#+STARTUP: entitiespretty
 * Stability in stochastic optimization
-
 Here we summarize some of the key ideas and techniques from [1, 2]. The motivation for seeking "better models" in stochastic optimization is to reduce the impact and burden of hyperparameter selection, in particular, selection of the initial learning rate and learning rate schedule. Without proper selection of the learning rate, stochastic gradient descent can diverge or converge arbitrarily slowly[fn:1], even on convex problems.
 
-Somewhat more surprisingly, [1] shows fast convergence on a class of so-called "easy to optimize" problems (including convergence to stationary points for weakly-convex problems) and show that their methods give the fastest rates known for phase retrieval.
+Somewhat more surprisingly, [1] shows fast convergence on a class of so-called "easy to optimize" problems (including convergence to stationary points for weakly-convex problems). As an application, they show that their methods give the fastest rates known for phase retrieval.
 
 We also relate the work on stability and convergence guarantees to those studied in the context of gradient clipping [3, 4] and empirical risk minimization for non-convex objectives [5]. The end of the notes also includes experimental results demonstrating the improved stability and convergence rates on synthetic and real datasets[fn:2].
 
@@ -46,23 +51,84 @@ where $\Sigma(x^*) = \nabla^2 F(x^*)^{-1} Cov(\nabla f(x^*; S)) \nabla^2 F(x^*)^
 *** Local Asymptotic Minimax Optimality
 As in the context of estimation [9 section 8.3], minimax lower bounds are often too coarse (see the discussion in the introduction of [10]), so we instead consider minimax optimallity within a neighborhood that shrinks as the iteration number increases (for M-estimation we consider smaller parameter sets with increasing sample size). Generally, in stochastic optimization, the objective function is known, but the distribution of the samples $S \sim P$ is not known. Analogously to the estimation case, we consider a shrinking neighborhood of distributions (with KL divergence within some range).
 
-Corollary 2 of [10] gives us the following result (recalled informally): the limit behavior of $\|\sqrt k (\bar x_k - x^*)\|_2$ is lower bounded by $\|Z\|_2$ where $Z \sim N(0, \Sigma(x^*) )$. This shows that the convergence of the truncated method is locally asymptotically optimal in the minimax sense. As in the estimation case (recall the behavior of the Hodges estimator at 0), it can be shown that the set of samples on which $\bar x_k$ is strictly better than $Z$ in expectation has measure 0.
+Corollary 2 of [10] gives us the following result (recalled informally): the limit behavior of the worst case $\|\sqrt k (\bar x_k - x^*)\|_2$ is lower bounded by $\|Z\|_2$ where $Z \sim N(0, \Sigma(x^*) )$. This shows that the convergence of the truncated method is locally asymptotically optimal in the minimax sense. As in the estimation case (recall the behavior of the Hodges estimator at 0), it can be shown that the set of samples on which $\bar x_k$ is strictly better than $Z$ in expectation has measure 0.
 
 *** Results for weakly-convex functions
-[1] also shows that for coercive[fn:5], weakly convex functions that satisfy the following "relative noise" condition on $f'$, the proximal model method has bounded iterates:
+Going beyond the results for convex functions developed in [2], Asi and Duchi also show that for coercive[fn:5], weakly convex functions that satisfy the following "relative noise" condition on $f'$, the proximal model method has bounded iterates [1]:
 
 $$Var(f'(x;S)) \leq C_1\|F'(x)\|_2^2 + C_2$$
 
-Although there is no discussion of this condition for the truncated model method, the condition looks very similar to the relaxation of the Lipschitz smoothness condition explored in [3] as part of their analysis of gradient clipping. Accordingly, we include a comparison to SGM with gradient clipping in our experimental results section.
+Although there is no discussion of this condition for the truncated model method, the condition looks very similar to the relaxation of the Lipschitz smoothness condition explored in [3] as part of their analysis of gradient clipping. Accordingly, we include a comparison to SGM with gradient clipping in our experimental results section. Recall that for a function to have L-Lipschitz gradients it must satisfy:
 
-In addition, for weakly-convex functions whose set of stationary points have an image of Lebesgue measure 0, [1] shows that methods with bounded iterates converge to stationary points. This is reminiscent of the conditions and results in [5]. In an attempt to connect the two, we check the required conditions for an application addressed in [5] (non-convex binary classification) as well as explore some experimental results for this problem.
+$$\|\nabla f (x) - \nabla f(y) \| \leq L \|x- y\| \, \text{for all} \, x,y$$
 
-** Fast rates and easy problems
+Even a simple third order polynomial does not satisfy this condition over all $\mathbb R^d$. To relax this condition, [3] introduces the notion of $(L_0, L_1)$ smoothness for twice differentiable functions as:
 
+$$\|\nabla^2f(x)\| \leq L_0 + L_1\|\nabla f(x)\|$$
+
+which has some similarity to the "relative noise" condition above.
+
+In addition, for weakly-convex functions whose set of stationary points have an image of Lebesgue measure 0, [1] shows that methods with bounded iterates converge to stationary points. This is reminiscent of the conditions and results in [5][fn:6]. In an attempt to connect the two, we check the required conditions for an application addressed in [5] (non-convex binary classification) as well as explore some experimental results for this problem.
+
+** Fast rates for easy problems
+Asi and Duchi [1, 2] call a problem \emph{easy to optimize} if the loss of a optimum, $x^{*}$, at a specific sample, $s$, is the best possible loss achievable over all $x \in \mathcal X$ for every $s$ in the sample space[fn:7]:
+
+\begin{displaymath}
+\inf_{x \in \mathcal X} f(x;s) \ f(x^{*};s) \, \forall s \in \mathcal S
+\end{displaymath}
+
+While certainly a strong assumption, problems that are easy to optimize include: phase retrieval, classification problems with linearly separable classes, and machine learning problems where the training loss goes to 0 (or it's absolute minimum). In the experimental section we also consider the problem of solving an overdetermined system (specifically, noiseless $\ell_{1}$ regression).
+
+For easy to optimize problems, Lemma 4.1 of [1] shows that the sequence $\|x_{k} - x^{*}\|_{2}$ is non-increasing for the truncated model method (as well as the other methods considered in [1]).
+In order to derive rates of convergence, we also require an additional "sharp-growth" assumption near the optimum set $\mathcal X^{*}$ (A6 from [1]) that is awkward to work with. Instead we go after a pair of simpler conditions that imply the sharp growth condition:
+
+The first is a small-ball type condition [7] where we require the following lower bound for some constants $\lambda,p>0$[fn:8][fn:9]:
+
+\begin{displaymath}
+\mathbb P\left(f(x;S) \geq \lambda \text{dist}(x, \mathcal X^{*})\right) \geq p
+\end{displaymath}
+
+The second is that the gradients grow at most quadratically:
+
+\begin{displaymath}
+\mathbb E \|f'(x; S)\|_{2}^{2} \leq C(1+\text{dist}(x,\mathcal X^{*}))^{2}
+\end{displaymath}
+
+With these conditions, (a more specific version of) proposition 2 of [1] gives us:
+
+For stepsizes of the form $\alpha_{k}=\alpha_{0}k^{-\beta}$ where $\beta < 1$, the iterates of the truncated model method for a convex objective converge linearly to the optimum with probability 1. More specifically:
+
+\begin{displaymath}
+\frac{\text{dist}(x_{k}, \mathcal X^{*})}{(1-\lambda_{1})^{k}} \xrightarrow{a.s.} V
+\end{displaymath}
+
+For some finite limit $V$ where $\lambda_{1}$ is a constant related to the sharp growth condition mentioned previously. In contrast, consider the objective $f(x) = \|x\|_{1}$ (which satisfies the conditions above for all distributions[fn:10]) where the convergence rate of subgradient descent methods is bounded by that of $\alpha_{k}$. Note that in this case SGM iterates:
+
+\begin{displaymath}
+x_{k+1} = x_{k} - \alpha_{k}\text{sign}(x_{k})
+\end{displaymath}
+
+So the the learning rate directly determines the convergence rate in the SGM case. Recall that a typical learning rate schedule is $\alpha_{k} = O(1/\sqrt k)$ [12] which is certainly slower than linear convergence. This is the disappointing behavior of the generic subgradient method which does not take advantage of additional information about the objective function[fn:11]:
+
+[[./sgm.png]]
+
+The proof of proposition 2 and it's lemmas involve multiple applications of the Robbins-Siegmund almost supermartingale convergence theorem (Lemma A.4 in [1])
+
+With some additional assumptions on the distribution of the design matrix, example 4 of [1] shows that these conditions hold for phase retrieval. Their derivation involves a typical VC bound on the deviation of the empirical counts from it's expectation [11 Theorem 12.5].
+
+
+
+
+* Questions
+- The paragraph in Example 4.3.1 from [2] following lemma 4.2 includes the following claim for $a/\sqrt n \sim \text{Uni}[\mathbb S^{n-1]}$ uniformly distributed on the sphere of radius $\sqrt n$ in $n$ dimensions and any $v \in \mathbb R^{n}$:
+\begin{displaymath}
+\mathbb P\left(\langle a, v \rangle \geq \frac{1}{2}\|v\|_{2}\right) \geq \frac{1}{2}
+\end{displaymath}
+
+See this stack overflow question: [[https://math.stackexchange.com/questions/3922615/lower-bound-on-surface-area-of-hyperspherical-cap-of-height-o1-sqrt-n][Lower bound on surface area of hyperspherical cap of height $O(1/\sqrt n)$]]
 
 * References
-
-
+\parindent0pt
 [1] Asi, H. & Duchi, J. C. The importance of better models in stochastic optimization. Arxiv (2019).
 
 [2] Asi, H. & Duchi, J. C. Stochastic (Approximate) Proximal Point Methods: Convergence, Optimality, and Adaptivity. Arxiv (2018) doi:10.1137/18m1230323.
@@ -83,7 +149,24 @@ In addition, for weakly-convex functions whose set of stationary points have an 
 
 [10] Duchi, J. & Ruan, F. Asymptotic Optimality in Stochastic Optimization. Arxiv (2016).
 
+[11] Devroye, L., Gyorfi, L. & Lugosi, G. A Probabilistic Theory of Pattern Recognition. Discrete Appl Math 73, 192–194 (1997).
+
+[12] Bubeck, S. Convex Optimization: Algorithms and Complexity. Found Trends Mach Learn 8, 231–357 (2015).
+
+
 * Footnotes
+
+[fn:11] The \emph{clip} method will always do worse than SGM in this case since the gradient is constant in magnitude throughout (except at the optimum).
+
+[fn:10] Note that the gradients are uniformly bounded from above and that $\mathbb P \left (\|x\|_{1} \geq \epsilon\|x\|_{2}\right) = 1$ for $\epsilon = \sqrt n$.
+
+[fn:9] Recall that we assume wlog that the infimum of $f$ is $0^{}$.
+
+[fn:8] [2] mentions that an estimate of this type can be obtained from an application of the Paley-Zygmund inequality, but it's not clear to me that it has been demonstrated in this work or in [1].
+
+[fn:7] Note that this condition implies that $\inf_{x \in \mathcal X} f(x;s)$ exists.
+
+[fn:6] We went through this paper a few weeks ago.
 
 [fn:5] Go to infinity as the norm of the argument goes to infinity
 
