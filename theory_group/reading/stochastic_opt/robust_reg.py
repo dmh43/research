@@ -52,14 +52,14 @@ def main():
                                  step=step,
                                  clip_gamma=clip_gamma)
       print(objs[-1], init)
-      plt.plot(np.clip(objs, None, 1e3), label=init)
-      # plt.plot([np.linalg.norm(x - l1_reg.x_0)**2 for x in xs], label=init)
+      # plt.plot(np.clip(objs, None, 1e3), label=init)
+      plt.plot([np.linalg.norm(x - l1_reg.x_0)**2 for x in xs], label=init)
     plt.legend()
     plt.yscale('log')
     # plt.ylim(10e-3, 10e-2)
     plt.xlabel('Iteration number')
-    plt.ylabel('Objective')
-    # plt.ylabel('dist^2')
+    # plt.ylabel('Objective')
+    plt.ylabel('dist^2')
     plt.title('Robust Regression ({})'.format(step.upper()))
   plt.show()
 

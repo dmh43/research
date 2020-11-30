@@ -33,11 +33,17 @@ $$f_{x_k}^{\text{SGM}}(y; s) = f(x_k; s) + \langle g_k, y-x_k \rangle$$
 
 Now we can frame SGM as minimizing a regularized version of this objective, iterating:
 
-$$x_{k+1} = \argmin_{x \in \mathcal X} f_{x_k}^{\text{SGM}}(x; S_k) + \frac{1}{2\alpha} \|x-x_k\|_2^2$$
+$$x_{k+1} = \argmin_{x \in \mathcal X} f_{x_k}^{\text{SGM}}(x; S_k) + \frac{1}{2\alpha_{k}} \|x-x_k\|_2^2$$
 
 Proximal point and prox-linear methods can also be viewed in this model-based framework. For the duration of these notes, we focus on the so-called \emph{truncated model} which applies when $f$ has a known lower bound. Without loss of generality, we assume this lower bound is $0$: $f(\cdot; s) > 0$ for all $s$ in the sample space $\mathcal S$:
 
 $$f_x^{\text{trunc}}(y; s) = \left[ f_{x}^{\text{SGM}}(y; s) \right]_+ = \max\{0, f(x; s) + \langle g_k, y-x \rangle \}$$
+
+This gives us the truncated model method:
+\begin{align}
+x_{k+1}  &= \argmin_{x \in \mathcal X} f_{x_k}^{\text{trunc}}(x_{k}; s) + \frac{1}{2\alpha_{k}} \|x-x_k\|_2^2 \\
+     &= \argmin_{x \in \mathcal X} \max\{0, f(x_{k}; s) + \langle g_k, x-x_{k} \rangle \} + \frac{1}{2\alpha_{k}} \|x-x_k\|_2^2
+\end{align}
 
 ** From better models to stability to (asymptotically) optimal convergence
 Arguably, the truncated model of the previous section is "better" (or at least more faithful) than the naive linear model of SGM. Asi and Duchi show [1] that for convex functions whose gradients grow at most polynomially, the iterates of the truncated method are bounded with probability 1. This is precisely the additional condition needed for proposition 1 and theorem 2 which together guarantee almost sure convergence of the iterates to the optimum as well as asymptotically optimal convergence.
@@ -58,13 +64,13 @@ Going beyond the results for convex functions developed in [2], Asi and Duchi al
 
 $$Var(f'(x;S)) \leq C_1\|F'(x)\|_2^2 + C_2$$
 
-Although there is no discussion of this condition for the truncated model method, the condition looks very similar to the relaxation of the Lipschitz smoothness condition explored in [3] as part of their analysis of gradient clipping. Accordingly, we include a comparison to SGM with gradient clipping in our experimental results section. Recall that for a function to have L-Lipschitz gradients it must satisfy:
+Although there is no discussion of this condition for the truncated model method, the condition looks very similar to the relaxation of the Lipschitz smoothness condition explored in [3] as part of their analysis of gradient clipping and is also a relaxation of the condition of globally Lipschitz gradients. Accordingly, we include a comparison to SGM with gradient clipping in our experimental results section. Recall that for a function to have L-Lipschitz gradients it must satisfy:
 
-$$\|\nabla f (x) - \nabla f(y) \| \leq L \|x- y\| \, \text{for all} \, x,y$$
+$$\|\nabla f (x) - \nabla f(y) \|_{2} \leq L \|x- y\|_{2} \, \text{for all} \, x,y$$
 
 Even a simple third order polynomial does not satisfy this condition over all $\mathbb R^d$. To relax this condition, [3] introduces the notion of $(L_0, L_1)$ smoothness for twice differentiable functions as:
 
-$$\|\nabla^2f(x)\| \leq L_0 + L_1\|\nabla f(x)\|$$
+$$\|\nabla^2f(x)\|_{2} \leq L_0 + L_1\|\nabla f(x)\|_{2}$$
 
 which has some similarity to the "relative noise" condition above.
 
@@ -112,11 +118,102 @@ So the the learning rate directly determines the convergence rate in the SGM cas
 
 [[./sgm.png]]
 
+For comparison, FISTA (which does not take advantage of the boundedness and \emph{easy to optimize} behavior) achieves convergence of $O(1/k^{2})$ [12].
+
 The proof of proposition 2 and it's lemmas involve multiple applications of the Robbins-Siegmund almost supermartingale convergence theorem (Lemma A.4 in [1])
 
 With some additional assumptions on the distribution of the design matrix, example 4 of [1] shows that these conditions hold for phase retrieval. Their derivation involves a typical VC bound on the deviation of the empirical counts from it's expectation [11 Theorem 12.5].
 
+** Experimental Results
+We now investigate the performance of the truncated model method in comparison to SGM and SGM with gradient clipping. Although there are more sophisticated methods for implementing gradient clipping such as coordinate-wise adaptive clipping [4] we simply implement clipping to limit the norm of the gradient step. Since clipping is not our focus, we choose a fixed clipping threshold ($\gamma = 0.25$) that was chosen from a range and seemed to perform well in practice (typically better than standard SGM). The clipped SGM update is computed as:
 
+\begin{align}
+h_{k} = \alpha_{k}\min\{1, \frac{\gamma}{\|g_{k}\|_{2}}\} \\
+x_{k+1} &= x_{k} - h_{k} g_{k}
+\end{align}
+
+We explore the easy to optimize problem of noiseless $\ell_{1}$ regression (essentially solving a system of linear equations) in addition to the $\ell_{2}$ regression for linear binary classification with sigmoid activation. As we will see, the latter problem is not easy to optimize but we still get some benefit over SGM and clipped SGM.
+
+*** Truncated model method step
+
+Recall the iteration of the truncated model method:
+
+\begin{displaymath}
+x_{k+1} = \argmin_{x \in \mathcal X} \max\{0, f(x_{k}; s) + \langle g_k, x-x_{k} \rangle \} + \frac{1}{2\alpha_{k}} \|x-x_k\|_2^2
+\end{displaymath}
+
+In order to determine a closed form iteration, we'll consider this minimization under $\mathcal X = \mathbb R^{d}$ (unconstrained). First reparametrize the above problem in terms of $u = x-x_{k}$:
+
+\begin{displaymath}
+\min_{u} \max\{0, f_{k} + \langle g_k, u\rangle \} + \frac{1}{2\alpha_{k}} \|u\|_2^2
+\end{displaymath}
+
+where we've written $f_{k}$ in place of $f(x_{k};s)$. Next, realize that to optimize the above expression $u$ must be in the direction of $-g_{k}$ so we can further simplify the problem to a 1 dimensional optimization:
+
+\begin{displaymath}
+\min_{\lambda} \max\{0, f_{k} - \lambda\|g_k\|_{2}^{2} \} + \frac{\lambda^{2}}{2\alpha_{k}} \|g_{k}\|_2^2
+\end{displaymath}
+
+For $f_{k} - \lambda\|g_k\|_{2}^{2} \geq 0$ we have that $\lambda = \alpha_{k}$. Otherwise, $\lambda$ is determined by solvingd the constrained optmization problem:
+
+\begin{align*}
+\min_{\lambda} \frac{\lambda^{2}}{2\alpha_{k}} \|g_{k}\|_2^2 \\
+\text{subject to} \, f_{k} - \lambda\|g_k\|_{2}^{2} < 0
+\end{align*}
+
+After dualizing the constraint and applying the KKT conditions, we get that $\lambda = \frac{f_{k}}{\|g_{k}\|_{2}^{2}}$. Summarizing, the truncated model method iterates as:
+
+\begin{align*}
+\lambda_{k} &= \min \{\alpha, \frac{f_{k}}{\|g_{k}\|_{2}^{2}}\} \\
+x_{k+1} &= x_{k} - \lambda_{k} g_{k}
+\end{align*}
+
+*** Step sizes
+We choose step sizes of the form $\alpha_{0}k^{-\beta}$ for all methods considered. For the truncated method we choose $\beta \approx 1$, and for SGM and the clipped SGM method $\beta = 1$.
+
+*** Noiseless $\ell_{1}$ Regression
+Consider the overspecified system of equations:
+
+\begin{displaymath}
+y = Ax_{0}
+\end{displaymath}
+
+where $y \in \mathbb R^{n}, A \in \mathbb R^{n \times d}, x_0 \in \mathbb R^{d}$ where $n > d$. To determine $x_{0}$, we'll solve the following unconstrained optimization problem where the expectation is taken over the indexes $i \sim Uni\{1...n\}:
+
+\begin{displaymath}
+\min_{x} \mathbb E \left|y_{i} - a_{i}^{T}x \right|_{}
+\end{displaymath}
+
+This problem is clearly easy to optimize since the global optimum is 0 and a single sample can achieve 0 error. To generate a problem that satisfies the required sharp growth assumption, we'll sample $A$ from the Haar distribution over orthonormal matrices using \texttt{scipy.stats.ortho\_group.rvs}. We compare the three methods by plotting the distance from the optimum over a wide range of logarithmically spaced learning rates. Notice that the SGM and clipped SGM methods clearly show their slow convergece of $1/\sqrt k$, although the clipped method appears to be slightly less sensitive to stepsize selection. The truncated model method is better behaved over the range of stepsizes and show's clearly the linear convergence.
+
+Although not shown here, experiments using a poorly conditioned $A$ matrix make the difference in the methods even more dramatic. In contrast, if we instead considered $\ell_{1}$ regression with noise (which is not easy to optimize), we would see that the methods perform similarly.
+
+[[./rr_sgm.png]]
+[[./rr_clip.png]]
+[[./rr_trunc.png]]
+
+*** Non-convex Linear Binary Classification
+The second problem we consider is a non-convex alternative to logistic regression where the prediction is of the form $\sigma(x^{T}a)$ where $\sigma(\cdot)$ is the logistic sigmoid function. The optimization problem at hand is given by:
+
+\begin{displaymath}
+\min_{x \in \mathcal X} \mathbb E \left(y_{i} - \sigma(x^{T}a_{i})\right)^{2}
+\end{displaymath}
+
+Which is certainly not easy to optimize in general; the optimum $x$ for a single sample does not exist ($x$ will go off to $\infty$ or $-\infty$ to minimize the loss). Further, the objective has globally Lipschitz gradients, so we expect the methods to behave similarly with regards to convergence rates[fn:12]. However we might still benefit from increased stability over a wider range of stepsizes.
+
+This optimization problem was studied by Mei et al. in [5] as an application of their results on the convergence of critical points of empirical risk for non-convex objectives. In particular, they consider the optimization with constraint set $\mathcal X = B(0, r)$ the $\ell_{2}$ ball of radius $r$ centered at the origin. In the case of linearly separable classes, $x$ goes off to infinity, so enforcing some constraint or adding some regularization is typically required.
+
+Enforcing this hard constraint automatically insures the stability of iterates, so we can directly apply the results of 3.3 from [1] to show that we have convergence to a stationary point. It is easy to show that the objective is weakly convex by computing the hessian and noticing that it is bounded from below. Mei et al. show further that the above problem has only a single stationary point (if $r$ is large enough), and that that point is the global optimum. Proposition 1 of [1] tells us that $x_{k}$ converges to a stationary point; since there is only a single stationary point, $x_{k}$ converges to the global optimum.
+
+We create a synthetic problem by sampling $A$ from a unit normal and sampling the target, $y$, as: $y_{i} =1 \, wp\,  \sigma(a_{i}^{T}x)$ and 0 otherwise. We sweep over a range of initial step sizes for SGM, clipped SGM and the truncated model method for a range of values for $r$ and plot the number of iterations required to reach a specified error (with a maximum number of iterations of $10^{4}$).
+
+For the finite values of $r$ it is important to exactly solve the iteration specified by the truncated model method, rather than iterating as for the unconstrained problem and then projecting back on to the constraint set. Despite this, we only implemented the latter projected gradient method so our results for finite $r$ might not be representative. Notice that the SGM with clipping performs best for finite $r$ while the truncated model method is the only method to reach the required error within the maximum number of step sizes for the unconstrained problem.
+
+[[./bin_cls.png]]
+
+As an example application to real data, we also experimented with the binary classification breast cancer dataset available through sklearn. We only checked the unconstrained case but ran several bootstrapped samples to obtain 25th and 75th percentiles (plotted in lighter colors). Our stopping criteria in this case was achieving a given validation AUC. Notice that the truncated model method performs well over most of the range of learning rates. All methods are able to achieve a test AUC of 0.99 for some initial step size and value of $r$. Interestingly, logistic regression could not achieve a test AUC much better than 0.95.
+
+[[./boston.png]]
 
 
 * Questions
@@ -126,6 +223,9 @@ With some additional assumptions on the distribution of the design matrix, examp
 \end{displaymath}
 
 See this stack overflow question: [[https://math.stackexchange.com/questions/3922615/lower-bound-on-surface-area-of-hyperspherical-cap-of-height-o1-sqrt-n][Lower bound on surface area of hyperspherical cap of height $O(1/\sqrt n)$]]
+
+- Where is the last inequality from example 4 of [1] from? Are some of the terms being uniformly bounded by a constant?
+- What is the connection between the truncated model method and Polyak step sizes? How is this related to gradient clipping (in a deeper way than addressed here)?
 
 * References
 \parindent0pt
@@ -155,6 +255,8 @@ See this stack overflow question: [[https://math.stackexchange.com/questions/392
 
 
 * Footnotes
+
+[fn:12] I dont have a reference for this, but there is a comment at the beginning of the experiments section of [2] that mentions that SGM is asymptotically normal with optimal covariance for objectives with globally Lipschitz gradients, in which case we expect the asymptotic rates of SGM and the truncated model method to be similar. Most likely [8] has some specific references for this (likely some work from Polyak or Shapiro).
 
 [fn:11] The \emph{clip} method will always do worse than SGM in this case since the gradient is constant in magnitude throughout (except at the optimum).
 
