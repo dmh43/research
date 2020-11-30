@@ -7,11 +7,11 @@
 #+LATEX_HEADER: \hypersetup{colorlinks=true, urlcolor=cyan,}
 #+STARTUP: entitiespretty
 * Stability in stochastic optimization
-Here we summarize some of the key ideas and techniques from [1, 2]. The motivation for seeking "better models" in stochastic optimization is to reduce the impact and burden of hyperparameter selection, in particular, selection of the initial learning rate and learning rate schedule. Without proper selection of the learning rate, stochastic gradient descent can diverge or converge arbitrarily slowly[fn:1], even on convex problems.
+Here we summarize some of the key ideas and techniques from [1, 2]. The motivation for seeking "better models" in stochastic optimization is to reduce the impact and burden of hyperparameter selection, in particular, selection of the parameter initialization, initial learning rate and learning rate schedule. Without proper selection of the learning rate, stochastic gradient descent can diverge or converge arbitrarily slowly[fn:1], even on convex problems.
 
 Somewhat more surprisingly, [1] shows fast convergence on a class of so-called "easy to optimize" problems (including convergence to stationary points for weakly-convex problems). As an application, they show that their methods give the fastest rates known for phase retrieval.
 
-We also relate the work on stability and convergence guarantees to those studied in the context of gradient clipping [3, 4] and empirical risk minimization for non-convex objectives [5]. The end of the notes also includes experimental results demonstrating the improved stability and convergence rates on synthetic and real datasets[fn:2].
+We also relate the work on stability and convergence guarantees to those studied in the context of gradient clipping [3, 4] and empirical risk minimization for non-convex objectives [5]. Section 1.5 of these notes also includes experimental results demonstrating the improved stability and convergence rates on synthetic problems and a real dataset[fn:2].
 
 ** Instability of gradient descent
 Gradient descent can behave badly even for the quadratic objective $F(x) = 1/2x^2$. For a learning rate schedule: $\alpha_k = \alpha_0 k^{-\beta}$ gradient descent proceeds as: $x_{k+1} = (1-\alpha_0k^{-\beta})x_k$. We have $|x_{k+1}| = |(1-\alpha_0k^{-\beta})||x_k|$ which for poorly specified $\alpha_0$ can be lower bounded by $2|x_k| = O(2^{k-1})$ for all $k \leq k_0$ where $k_0$ can potentially be large. So even in the case of a quadratic objective, the learning rate selection can lead to poor convergence[fn:3].
@@ -35,7 +35,7 @@ Now we can frame SGM as minimizing a regularized version of this objective, iter
 
 $$x_{k+1} = \argmin_{x \in \mathcal X} f_{x_k}^{\text{SGM}}(x; S_k) + \frac{1}{2\alpha_{k}} \|x-x_k\|_2^2$$
 
-Proximal point and prox-linear methods can also be viewed in this model-based framework. For the duration of these notes, we focus on the so-called \emph{truncated model} which applies when $f$ has a known lower bound. Without loss of generality, we assume this lower bound is $0$: $f(\cdot; s) > 0$ for all $s$ in the sample space $\mathcal S$:
+Proximal point and prox-linear methods can also be viewed in this model-based framework (as discussed in [1, 2]). For the duration of these notes, we mainly focus on the so-called \emph{truncated model} which applies when $f$ has a known lower bound. Without loss of generality, we assume this lower bound is $0$: $f(\cdot; s) > 0$ for all $s$ in the sample space $\mathcal S$:
 
 $$f_x^{\text{trunc}}(y; s) = \left[ f_{x}^{\text{SGM}}(y; s) \right]_+ = \max\{0, f(x; s) + \langle g_k, y-x \rangle \}$$
 
@@ -55,9 +55,9 @@ $$\sqrt k(\bar x_k - x^*) \xrightarrow{d} N(0, \Sigma(x^*))$$
 where $\Sigma(x^*) = \nabla^2 F(x^*)^{-1} Cov(\nabla f(x^*; S)) \nabla^2 F(x^*)^{-1}$.
 
 *** Local Asymptotic Minimax Optimality
-As in the context of estimation [9 section 8.3], minimax lower bounds are often too coarse (see the discussion in the introduction of [10]), so we instead consider minimax optimallity within a neighborhood that shrinks as the iteration number increases (for M-estimation we consider smaller parameter sets with increasing sample size). Generally, in stochastic optimization, the objective function is known, but the distribution of the samples $S \sim P$ is not known. Analogously to the estimation case, we consider a shrinking neighborhood of distributions (with KL divergence within some range).
+As in the context of estimation [9 section 8.3], minimax lower bounds are often too coarse (see the discussion in the introduction of [10]), so we instead consider minimax optimality within a neighborhood that shrinks as the iteration number increases (for M-estimation we consider parameter sets that shrink with increasing sample size). Generally, in stochastic optimization, the objective function is known, but the distribution of the samples $S \sim P$ is not known. Analogously to the estimation case, we consider a shrinking neighborhood of distributions (with KL divergence within some range).
 
-Corollary 2 of [10] gives us the following result (recalled informally): the limit behavior of the worst case $\|\sqrt k (\bar x_k - x^*)\|_2$ is lower bounded by $\|Z\|_2$ where $Z \sim N(0, \Sigma(x^*) )$. This shows that the convergence of the truncated method is locally asymptotically optimal in the minimax sense. As in the estimation case (recall the behavior of the Hodges estimator at 0), it can be shown that the set of samples on which $\bar x_k$ is strictly better than $Z$ in expectation has measure 0.
+Corollary 2 of [10] gives us the following result (recalled informally): the limit behavior of the worst case $\|\sqrt k (\bar x_k - x^*)\|_2$ is lower bounded by $\|Z\|_2$ where $Z \sim N(0, \Sigma(x^*) )$. This shows that the convergence of the truncated method is locally asymptotically optimal in the minimax sense. As in the estimation case (recall the behavior of the Hodges estimator at 0), we have the analogous super-efficiency result; it can be shown that the set of samples on which $\bar x_k$ is strictly better than $Z$ in expectation has measure 0.
 
 *** Results for weakly-convex functions
 Going beyond the results for convex functions developed in [2], Asi and Duchi also show that for coercive[fn:5], weakly convex functions that satisfy the following "relative noise" condition on $f'$, the proximal model method has bounded iterates [1]:
@@ -80,7 +80,7 @@ In addition, for weakly-convex functions whose set of stationary points have an 
 Asi and Duchi [1, 2] call a problem \emph{easy to optimize} if the loss of a optimum, $x^{*}$, at a specific sample, $s$, is the best possible loss achievable over all $x \in \mathcal X$ for every $s$ in the sample space[fn:7]:
 
 \begin{displaymath}
-\inf_{x \in \mathcal X} f(x;s) \ f(x^{*};s) \, \forall s \in \mathcal S
+\inf_{x \in \mathcal X} f(x;s) = f(x^{*};s) \, \forall s \in \mathcal S
 \end{displaymath}
 
 While certainly a strong assumption, problems that are easy to optimize include: phase retrieval, classification problems with linearly separable classes, and machine learning problems where the training loss goes to 0 (or it's absolute minimum). In the experimental section we also consider the problem of solving an overdetermined system (specifically, noiseless $\ell_{1}$ regression).
@@ -128,11 +128,11 @@ With some additional assumptions on the distribution of the design matrix, examp
 We now investigate the performance of the truncated model method in comparison to SGM and SGM with gradient clipping. Although there are more sophisticated methods for implementing gradient clipping such as coordinate-wise adaptive clipping [4] we simply implement clipping to limit the norm of the gradient step. Since clipping is not our focus, we choose a fixed clipping threshold ($\gamma = 0.25$) that was chosen from a range and seemed to perform well in practice (typically better than standard SGM). The clipped SGM update is computed as:
 
 \begin{align}
-h_{k} = \alpha_{k}\min\{1, \frac{\gamma}{\|g_{k}\|_{2}}\} \\
+h_{k} &= \alpha_{k}\min\{1, \frac{\gamma}{\|g_{k}\|_{2}}\} \\
 x_{k+1} &= x_{k} - h_{k} g_{k}
 \end{align}
 
-We explore the easy to optimize problem of noiseless $\ell_{1}$ regression (essentially solving a system of linear equations) in addition to the $\ell_{2}$ regression for linear binary classification with sigmoid activation. As we will see, the latter problem is not easy to optimize but we still get some benefit over SGM and clipped SGM.
+We explore the easy to optimize problem of noiseless $\ell_{1}$ regression (essentially solving a system of linear equations) in addition to the $\ell_{2}$ regression for linear binary classification with sigmoid activation. As we will see, the latter problem is not easy to optimize but we still get some benefit over SGM and clipped SGM in the form of increased stability and insensitivity to the initial step size.
 
 *** Truncated model method step
 
@@ -148,7 +148,7 @@ In order to determine a closed form iteration, we'll consider this minimization 
 \min_{u} \max\{0, f_{k} + \langle g_k, u\rangle \} + \frac{1}{2\alpha_{k}} \|u\|_2^2
 \end{displaymath}
 
-where we've written $f_{k}$ in place of $f(x_{k};s)$. Next, realize that to optimize the above expression $u$ must be in the direction of $-g_{k}$ so we can further simplify the problem to a 1 dimensional optimization:
+where we've written $f_{k}$ in place of $f(x_{k};s)$. Next, realize that to optimize the above expression $u$ must be in the direction of $-g_{k}$ so we can further simplify the problem to a 1-dimensional optimization:
 
 \begin{displaymath}
 \min_{\lambda} \max\{0, f_{k} - \lambda\|g_k\|_{2}^{2} \} + \frac{\lambda^{2}}{2\alpha_{k}} \|g_{k}\|_2^2
@@ -178,7 +178,7 @@ Consider the overspecified system of equations:
 y = Ax_{0}
 \end{displaymath}
 
-where $y \in \mathbb R^{n}, A \in \mathbb R^{n \times d}, x_0 \in \mathbb R^{d}$ where $n > d$. To determine $x_{0}$, we'll solve the following unconstrained optimization problem where the expectation is taken over the indexes $i \sim Uni\{1...n\}:
+where $y \in \mathbb R^{n}, A \in \mathbb R^{n \times d}, x_0 \in \mathbb R^{d}$ where $n > d$. To determine $x_{0}$, we'll solve the following unconstrained optimization problem where the expectation is taken over the indexes $i \sim Uni\{1...n\}$:
 
 \begin{displaymath}
 \min_{x} \mathbb E \left|y_{i} - a_{i}^{T}x \right|_{}
@@ -205,7 +205,7 @@ This optimization problem was studied by Mei et al. in [5] as an application of 
 
 Enforcing this hard constraint automatically insures the stability of iterates, so we can directly apply the results of 3.3 from [1] to show that we have convergence to a stationary point. It is easy to show that the objective is weakly convex by computing the hessian and noticing that it is bounded from below. Mei et al. show further that the above problem has only a single stationary point (if $r$ is large enough), and that that point is the global optimum. Proposition 1 of [1] tells us that $x_{k}$ converges to a stationary point; since there is only a single stationary point, $x_{k}$ converges to the global optimum.
 
-We create a synthetic problem by sampling $A$ from a unit normal and sampling the target, $y$, as: $y_{i} =1 \, wp\,  \sigma(a_{i}^{T}x)$ and 0 otherwise. We sweep over a range of initial step sizes for SGM, clipped SGM and the truncated model method for a range of values for $r$ and plot the number of iterations required to reach a specified error (with a maximum number of iterations of $10^{4}$).
+We create a synthetic problem by sampling $A$ from a unit normal and sampling the target, $y$, as: $y_{i} =1$ with probability $\sigma(a_{i}^{T}x)$ and 0 otherwise. We sweep over a range of initial step sizes for SGM, clipped SGM and the truncated model method for a range of values for $r$ and plot the number of iterations required to reach a specified error (with a maximum number of iterations of $10^{4}$).
 
 For the finite values of $r$ it is important to exactly solve the iteration specified by the truncated model method, rather than iterating as for the unconstrained problem and then projecting back on to the constraint set. Despite this, we only implemented the latter projected gradient method so our results for finite $r$ might not be representative. Notice that the SGM with clipping performs best for finite $r$ while the truncated model method is the only method to reach the required error within the maximum number of step sizes for the unconstrained problem.
 
@@ -226,6 +226,7 @@ See this stack overflow question: [[https://math.stackexchange.com/questions/392
 
 - Where is the last inequality from example 4 of [1] from? Are some of the terms being uniformly bounded by a constant?
 - What is the connection between the truncated model method and Polyak step sizes? How is this related to gradient clipping (in a deeper way than addressed here)?
+- Is there a simpler way to derive the truncated model method step than that in 1.5.1?
 
 * References
 \parindent0pt
