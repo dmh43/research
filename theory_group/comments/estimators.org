@@ -1,0 +1,84 @@
+Here’s something I’ve been thinking about a lot recently: are
+asymptotic results actually useful? For example, does the central
+limit theorem actually tell me anything practical? Since the CLT is an
+asymptotic result, it only applies in the limit (for some n large
+enough, the distribution is close to normal). Without a result like
+Berry-Esseen (upper bounds the deviation of the distribution at hand
+from a normal distribution for every sample size), I can’t actually
+make any confident claims that leverage the normality of \sqrt n (X -
+\mathbb E X) for a given sample size.
+
+Non-asymptotic results also have difficulties: if the constants in the
+Berry-Esseen bound are unknown, then I would also claim that the
+result is not actually useful. Generally we want the constants to be
+independent of certain factors (such as the dimension), but they could
+still be large. Even in the case that the constants are known, i would
+also need some reason to believe the bound is optimal in some sense
+(otherwise i would also claim that the bound is not useful).
+
+Maybe I’m being pedantic, but applying asymptotic results to the
+non-asymptotic case (basically any practical application) seems like
+we’re just hoping for the best.
+
+PaulB: Asymptotic results are usually short hand for some more subtle
+result. For instance, one might say O(log(n)) based on some Taylor
+series analysis etc but the detailed analysis can bound your error in
+many cases. That said I tend to think of asymptotic results as rules
+of thumb. Do I think it’s going to get worse/better? By how much?
+etc. They are like guide posts to tell you if you’re heading in the
+right way, but its almost never a (theoretically) good idea to replace
+an actual result with an asymptotic one, e.g., replacing a
+distribution with a normal one. Of course in practice people do it all
+the time and the world isn’t falling apart…maybe? I dunno given this
+week, but that’s probably due to things other than asymptotic
+approximations.
+
+To followup on yesterday’s discussion, a dramatic example of where the
+limiting behavior of an estimator isnt representative of it’s finite
+sample behavior is the Hodges estimator: Consider the sample mean \bar
+X_n an estimator of the sample mean E[X]. The Hodges estimator is
+defined as \bar X_n when |\bar X_n| > n^-1/4 and 0 otherwise. The
+limit behavior of the sample mean and the Hodges estimator are the
+same except when the true mean E[X] = 0, in particular, the Hodges
+estimator has the same asymptotic convergence rate for E[X] != 0, but
+converges arbitrarily fast when E[X] = 0 (!!). The faulty conclusion
+here is that the Hodges estimator is equivalent to the sample mean,
+but much better when the true mean is 0. In reality, for finite n, the
+truncation can lead to worse square error than the sample mean
+estimator for E[X] close to 0.
+
+To see that the limit behavior is the same, notice that it’s enough to
+consider the limiting behavior of the intervals (-n^-1/4, n^1/4) and
+(E[X] - M/\sqrt n, E[X] + M/\sqrt n) for finite M: since \sqrt n (
+\bar X - E[X]) is asymptotically normal.
+
+Havent gone through this yet, but the first remark is that we can get
+this superefficient behavior on at most a set of measure 0:
+http://www.stat.yale.edu/~pollard/Books/LeCamFest/VanderVaart.pdf
+
+See Van der Vaart 1998 section 8.1
+#+ATTR_HTML: width="100px"
+#+ATTR_ORG: :width 100
+[[./hodge.png]]
+
+
+
+
+Yesterday I learned something new about the James-Stein estimator
+(which I think we’ve mentioned here before): The JS estimator is
+surprising because, in the case of normal samples, it has strictly
+smaller expected l2 error (when the dimension > 2) than the sample
+mean for all n. Less surprisingly, as n goes to infinity, the sample
+mean is the optimal estimator. What I was surprised to learn yesterday
+is that if we take the limit as both the number of samples and the
+dimension go to infinity, with the ratio converging to a finite
+constant (Kolmogorov asymptotics), then the JS estimator also
+dominates the sample mean.
+
+See example 3 in: Beran, R. (1995). THE ROLE OF HAJEK’S CONVOLUTION
+THEOREM IN STATISTICAL THEORY where they discuss local asymptotic
+minimax optimality and some superefficiency results. Similar to the
+Hodges estimator, the JS estimator is superefficient when \theta = 0
+
+
+

@@ -1,0 +1,25 @@
+I recently got a copy of “Regression and other Stories” from Gelman
+and other bayes folks. There’s a discussion about frequentist
+hypothesis testing in there that’s super interesting. One thing they
+mention which I hadnt thought about before is that since research
+typically requires p<0.05, published results will often also have
+inflated effect sizes (overestimation errors in the point estimate)
+which explains the difficulty of reproducing results from research
+(quote in thread)
+
+"A final concern is that statistically significant estimates tend to
+be overestimates. This is the type M, or magnitude, error problem
+discussed in Section 4.4. Any estimate with p < 0.05 is by necessity
+at least two standard errors from zero. If a study has a high noise
+level, standard errors will be high, and so statistically significant
+estimates will automatically be large, no matter how small the
+underlying effect. Thus, routine reliance on published, statistically
+significant results will lead to systematic overestimation of effect
+sizes and a distorted view of the world.  All the problems discussed
+above have led to what has been called a replication crisis, in which
+studies published in leading scientific journals and conducted by
+researchers at respected universities have failed to replicate. Many
+different problems in statistics and the culture of science have led
+to the replication crisis; for our purposes here, what is relevant is
+to understand how to avoid some statistical misconceptions associated
+with overcertainty."
