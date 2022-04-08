@@ -128,20 +128,38 @@ def inject_noise(y, gamma):
   mask = rn.rand(*y.shape) > gamma
   return (y * (1 - mask) + (1 - y) * mask).astype(bool).astype(int)
 
-def main():
+def get_20newsgroups():
   data, y = fetch_20newsgroups(
     remove=('headers', 'footers', 'quotes'), return_X_y=True, random_state=0, subset='all'
   )
   ohe = OneHotEncoder()
   y = np.array(ohe.fit_transform(y.reshape(-1, 1)).todense())
   train_data, test_data, train_y, test_y = train_test_split(data, y)
-  clean_train_y = train_y
   transformer = CountVectorizer(min_df=10)
   train_X = transformer.fit_transform(train_data).todense()
   test_X = transformer.transform(test_data).todense()
   mean, std = train_X.mean(0), train_X.std(0)
   train_X = (train_X - mean) / std
   test_X = (test_X - mean) / std
+  return train_X, test_X, train_y, test_y
+
+def get_synthetic(n=50, d=50, num_queries=10):
+  test_size = 100
+  theta = torch.randn((num_queries, d))
+  X = torch.randn((n + test_size, d))
+  y = (torch.rand((n + test_size, num_queries)) < torch.sigmoid((X.unsqueeze(1) * theta.unsqueeze(0)).sum(-1))).float()
+  return (a.numpy() for a in (X[:n], X[n : n + test_size], y[:n], y[n : n + test_size]))
+
+fetch_lookup = {
+  '20newsgroups': get_20newsgroups,
+  'synthetic': get_synthetic
+}
+
+def main():
+  # experiment_name = '20newsgroups'
+  experiment_name = 'synthetic'
+  train_X, test_X, train_y, test_y = fetch_lookup[experiment_name]()
+  clean_train_y = train_y
   losses = ['logloss', 'ranknet', 'sym_logloss', 'sym_ranknet']
   selection_methods = ['loss', 'auc', 'ndcg@10', 'map']
   model_params = [{'loss': loss}
@@ -159,10 +177,10 @@ def main():
 
   performance = []
   for p in model_params:
+    model = Estimator(**p)
+    model.fit(train_X, train_y, test=(test_X, test_y), options=options)
     for method in selection_methods:
       print('params:', p, 'selection method:', method)
-      model = Estimator(**p)
-      model.fit(train_X, train_y, test=(test_X, test_y), options=options)
       pred_y = model.predict(test_X, method=method)
       row = dict(**p)
       row['method'] = method
@@ -172,6 +190,7 @@ def main():
       row['auc'] = roc_auc_score(test_y, pred_y)
       performance.append(row)
   df = pd.DataFrame(performance)
+  df.to_csv('{}.csv'.format(experiment_name))
   print(df)
 
 
