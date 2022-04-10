@@ -202,6 +202,7 @@ class ScorerEstimator(Estimator):
       out = model(train_X)
       loss = loss_fn(out, train_y)
       loss.backward()
+      self.train_losses.append(loss.item())
       optimizer.step()
       joblib.dump(model, run_dir / '{}.pkl'.format(i))
       val_perfs.append({name: fn(val_y.numpy(), model(val_X).detach().numpy())
@@ -259,10 +260,10 @@ def get_20newsgroups():
 
 def get_synthetic(n=50, d=50, num_queries=10):
   test_size = 100
-  theta = torch.randn((num_queries, d))
-  X = torch.randn((n + test_size, d))
+  theta = torch.ones(num_queries * d).reshape(num_queries, d) + torch.randn((num_queries, d))
+  X = 10*torch.randn((n + test_size, d))
   y = (torch.rand((n + test_size, num_queries)) < torch.sigmoid((X.unsqueeze(1) * theta.unsqueeze(0)).sum(-1))).float()
-  return [a.numpy() for a in (X[:n], X[n : n + test_size], y[:n], y[n : n + test_size])], None, None
+  return [a.numpy() for a in (X[:n], X[n : n + test_size], y[:n], y[n : n + test_size])] + [None, None]
 
 def get_mq_2007(path='./data/mq2007.txt'):
   X, y, row_qids = load_svmlight_file(path, query_id=True)
@@ -301,8 +302,8 @@ estimator_lookup = {
 
 def main():
   # experiment_name = '20newsgroups'
-  # experiment_name = 'synthetic'
-  experiment_name = 'mq2008'
+  experiment_name = 'synthetic'
+  # experiment_name = 'mq2008'
   train_X, test_X, train_y, test_y, train_qgs, test_qgs = fetch_lookup[experiment_name]()
   clean_train_y = train_y
 
@@ -311,14 +312,17 @@ def main():
   selection_methods = ['loss', 'auc', 'ndcg@10', 'dcg@10', 'map']
   model_params = [{'loss': loss}
                   for loss, in product(losses, repeat=1)]
-  # max_epochs = 50
-  # max_epochs = 300
+  #all datasets:
+  # max_epochs = 30
+  # synthetic:
   max_epochs = 30
   # weight_decay_options = np.r_[0, np.geomspace(1e-5, 1e-2, 4)]
   # weight_decay_options = [0]
-  weight_decay_options = [1e-5]
-  # lr_options = [0.01]
-  lr_options = [0.0001]
+  weight_decay_options = [1e-5, 1e-4, 1e-3]
+  # all datasets:
+  # lr_options = [0.0001]
+  # synthetic
+  lr_options = [0.01, 0.001, 0.1, 0.0001]
   options = [{'lr': lr, 'weight_decay': wd, 'max_epochs': max_epochs, 'exp_name': experiment_name}
              for lr, wd in product(lr_options, weight_decay_options, repeat=1)]
 
