@@ -194,7 +194,7 @@ class ScorerEstimator(Estimator):
     selection_lookup = get_selection_lookup(loss_fn)
     X = torch.tensor(X, dtype=torch.float32)
     y = torch.tensor(y, dtype=torch.float32)
-    train_X, val_X, train_y, val_y = train_test_split(X, y)
+    train_X, val_X, train_y, val_y = train_test_split(X, y, random_state=0)
     val_perfs = []
     print(options)
     for i in tqdm(range(max_epochs)):
@@ -249,7 +249,7 @@ def get_20newsgroups():
   )
   ohe = OneHotEncoder()
   y = np.array(ohe.fit_transform(y.reshape(-1, 1)).todense())
-  train_data, test_data, train_y, test_y = train_test_split(data, y)
+  train_data, test_data, train_y, test_y = train_test_split(data, y, random_state=0)
   transformer = CountVectorizer(min_df=10)
   train_X = transformer.fit_transform(train_data).todense()
   test_X = transformer.transform(test_data).todense()
@@ -258,10 +258,10 @@ def get_20newsgroups():
   test_X = (test_X - mean) / std
   return train_X, test_X, train_y, test_y, None, None
 
-def get_synthetic(n=50, d=50, num_queries=10):
+def get_synthetic(n=50, d=5, num_queries=10):
   test_size = 100
   theta = torch.ones(num_queries * d).reshape(num_queries, d) + torch.randn((num_queries, d))
-  X = 10*torch.randn((n + test_size, d))
+  X = torch.randn((n + test_size, d))
   y = (torch.rand((n + test_size, num_queries)) < torch.sigmoid((X.unsqueeze(1) * theta.unsqueeze(0)).sum(-1))).float()
   return [a.numpy() for a in (X[:n], X[n : n + test_size], y[:n], y[n : n + test_size])] + [None, None]
 
@@ -275,7 +275,7 @@ def get_mq_2007(path='./data/mq2007.txt'):
   y = np.concatenate([q_y for i, q_y in enumerate(qg_split(y, qgs)) if i not in to_drop])
   row_qids = np.concatenate([q_id for i, q_id in enumerate(qg_split(row_qids, qgs)) if i not in to_drop])
   qids, qgs = zip(*[(g, len(list(keys))) for g, keys in groupby(row_qids)])
-  train_qids, test_qids = train_test_split(qids)
+  train_qids, test_qids = train_test_split(qids, random_state=0)
   train_qids = set(train_qids)
   train_mask = np.array([True if qid in train_qids else False for qid in row_qids])
   train_qgs = [qg for qg, qid in zip(qgs, qids) if qid in train_qids]
@@ -301,15 +301,16 @@ estimator_lookup = {
 }
 
 def main():
-  # experiment_name = '20newsgroups'
-  experiment_name = 'synthetic'
+  experiment_name = '20newsgroups'
+  # experiment_name = 'synthetic'
   # experiment_name = 'mq2008'
   train_X, test_X, train_y, test_y, train_qgs, test_qgs = fetch_lookup[experiment_name]()
   clean_train_y = train_y
 
   losses = ['logloss', 'ranknet', 'sym_logloss', 'sym_ranknet']
   # losses = ['sym_logloss']
-  selection_methods = ['loss', 'auc', 'ndcg@10', 'dcg@10', 'map']
+  # selection_methods = ['loss', 'auc', 'ndcg@10', 'dcg@10', 'map']
+  selection_methods = ['loss']
   model_params = [{'loss': loss}
                   for loss, in product(losses, repeat=1)]
   #all datasets:
@@ -326,26 +327,29 @@ def main():
   options = [{'lr': lr, 'weight_decay': wd, 'max_epochs': max_epochs, 'exp_name': experiment_name}
              for lr, wd in product(lr_options, weight_decay_options, repeat=1)]
 
-  performance = []
-  for gamma in [1, 0.9, 0.8, 0.7, 0.6]:
-    train_y = inject_noise(clean_train_y, gamma)
-    for p in model_params:
-      torch.manual_seed(0)
-      model = estimator_lookup[experiment_name](**p)
-      model.fit(train_X, train_y, train_qgs, test=(test_X, test_y, test_qgs), options=options)
-      for method in selection_methods:
-        pred_y = model.predict(test_X, method=method).numpy()
-        row = dict(**p)
-        row['method'] = method
-        row['ndcg@10'] = wrap_qgs(wrap_dcg(ndcg_score))(test_y, pred_y, k=10, qgs=test_qgs)
-        row['dcg@10'] = wrap_qgs(wrap_dcg(dcg_score))(test_y, pred_y, k=10, qgs=test_qgs)
-        row['map'] = wrap_qgs(average_precision_score)(test_y, pred_y, qgs=test_qgs)
-        row['auc'] = wrap_qgs(roc_auc_score)(test_y, pred_y, qgs=test_qgs)
-        row['gamma'] = gamma
-        performance.append(row)
-  df = pd.DataFrame(performance)
-  df.to_csv('{}.csv'.format(experiment_name))
-  print(df)
+  res = []
+  for i in range(10):
+    performance = []
+    for gamma in [1, 0.9, 0.8, 0.7, 0.6]:
+      train_y = inject_noise(clean_train_y, gamma)
+      for p in model_params:
+        torch.manual_seed(0)
+        model = estimator_lookup[experiment_name](**p)
+        model.fit(train_X, train_y, train_qgs, test=(test_X, test_y, test_qgs), options=options)
+        for method in selection_methods:
+          pred_y = model.predict(test_X, method=method).numpy()
+          row = dict(**p)
+          row['method'] = method
+          row['ndcg@10'] = wrap_qgs(wrap_dcg(ndcg_score))(test_y, pred_y, k=10, qgs=test_qgs)
+          row['dcg@10'] = wrap_qgs(wrap_dcg(dcg_score))(test_y, pred_y, k=10, qgs=test_qgs)
+          row['map'] = wrap_qgs(average_precision_score)(test_y, pred_y, qgs=test_qgs)
+          row['auc'] = wrap_qgs(roc_auc_score)(test_y, pred_y, qgs=test_qgs)
+          row['gamma'] = gamma
+          performance.append(row)
+    df = pd.DataFrame(performance)
+    res.append(df)
+
+  joblib.dump(res, '{}.pkl'.format(experiment_name))
 
 
 
