@@ -1,3 +1,4 @@
+import fire
 from itertools import product, groupby
 from copy import deepcopy
 from pathlib import Path
@@ -55,7 +56,8 @@ class QBCEWithLogitsLoss():
 
 class SymBCEWithLogitsLoss():
   def __call__(self, out, y, qgs=None):
-    return -(torch.sigmoid(out) * y + (1 - torch.sigmoid(out)) * (1 - y)).mean()
+    # return -(torch.sigmoid(out) * y + (1 - torch.sigmoid(out)) * (1 - y)).mean()
+    return torch.exp(F.binary_cross_entropy_with_logits(out, y, reduction='none')).mean()
 
 class RanknetLoss():
   def __call__(self, out, y):
@@ -269,6 +271,7 @@ def get_mq_2007(path='./data/mq2007.txt'):
   X, y, row_qids = load_svmlight_file(path, query_id=True)
   qids, qgs = zip(*[(g, len(list(keys))) for g, keys in groupby(row_qids)])
   X = X.todense()
+  X = np.concatenate([X[:, :5], X[:, 11:-4], X[:, -3:]], axis=1)
   y = y.clip(0, 1)
   to_drop = {i for i, a in enumerate(qg_split(y, qgs)) if (max(a) == 0) or (min(a) == 1)}
   X = np.concatenate([q_X for i, q_X in enumerate(qg_split(X, qgs)) if i not in to_drop])
@@ -280,7 +283,6 @@ def get_mq_2007(path='./data/mq2007.txt'):
   train_mask = np.array([True if qid in train_qids else False for qid in row_qids])
   train_qgs = [qg for qg, qid in zip(qgs, qids) if qid in train_qids]
   test_qgs = [qg for qg, qid in zip(qgs, qids) if qid not in train_qids]
-  X = 10 * X
   return X[train_mask], X[~train_mask], y[train_mask], y[~train_mask], train_qgs, test_qgs
 
 def get_mq_2008(path='./data/mq2008.txt'):
@@ -300,15 +302,14 @@ estimator_lookup = {
   'mq2008': QScorerEstimator
 }
 
-def main():
-  experiment_name = '20newsgroups'
+def main(experiment_name):
+  # experiment_name = '20newsgroups'
   # experiment_name = 'synthetic'
   # experiment_name = 'mq2008'
   train_X, test_X, train_y, test_y, train_qgs, test_qgs = fetch_lookup[experiment_name]()
   clean_train_y = train_y
 
   losses = ['logloss', 'ranknet', 'sym_logloss', 'sym_ranknet']
-  # losses = ['sym_logloss']
   # selection_methods = ['loss', 'auc', 'ndcg@10', 'dcg@10', 'map']
   selection_methods = ['loss']
   model_params = [{'loss': loss}
@@ -354,4 +355,4 @@ def main():
 
 
 
-if __name__ == "__main__": main()
+if __name__ == "__main__": fire.Fire(main)
