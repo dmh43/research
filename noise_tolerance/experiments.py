@@ -336,7 +336,10 @@ def main(experiment_name):
       for p in model_params:
         torch.manual_seed(0)
         model = estimator_lookup[experiment_name](**p)
-        model.fit(train_X, train_y, train_qgs, test=(test_X, test_y, test_qgs), options=options)
+        try:
+          model.fit(train_X, train_y, train_qgs, test=(test_X, test_y, test_qgs), options=options)
+        except:
+          continue
         for method in selection_methods:
           pred_y = model.predict(test_X, method=method).numpy()
           row = dict(**p)
